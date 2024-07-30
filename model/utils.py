@@ -1,5 +1,5 @@
 import torch
-import sphericart as sct
+import sphericart.torch as sct
 
 import wandb
 import sys
@@ -102,7 +102,6 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj):
     :return: torch.tensor(N_batch, N_freqs)
     """
     coordinates = coordinates.reshape(-1, 3)
-    print(coordinates.shape)
     sh_values = sphericart_obj.compute(coordinates)
     return sh_values
 
