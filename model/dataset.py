@@ -37,8 +37,8 @@ class ImageDataSet(Dataset):
             shiftX = torch.from_numpy(np.array(particles_df["rlnOriginXAngst"].values, dtype=np.float32))
             shiftY = torch.from_numpy(np.array(particles_df["rlnOriginYAngst"].values, dtype=np.float32))
         else:
-            shiftX = torch.from_numpy(np.array(particles_df["rlnOriginX"].values * self.apix, dtype=np.float32))
-            shiftY = torch.from_numpy(np.array(particles_df["rlnOriginY"].values * self.apix, dtype=np.float32))
+            shiftX = torch.from_numpy(particles_df["rlnOriginX"].values * self.apix)
+            shiftY = torch.from_numpy(particles_df["rlnOriginY"].values * self.apix)
 
         self.poses_translation = torch.tensor(torch.vstack([shiftY, shiftX]).T, dtype=torch.float32)
         self.poses = poses
