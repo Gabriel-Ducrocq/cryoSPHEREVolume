@@ -113,6 +113,9 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     :return: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     """
     print("RADIUSES", radiuses_index.dtype)
+    print(alm.shape)
+    print(torch.max(radiuses_index))
+    print("\n\n\n")
     return alm[:, radiuses_index, :]
 
 def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
