@@ -53,7 +53,7 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    frequencies = Grid(256, 1)
+    frequencies = Grid(256, 1, device)
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs)
     N_unique_radiuses = len(unique_radiuses)
 
@@ -93,7 +93,7 @@ def parse_yaml(path):
     return vae, optimizer, dataset, N_epochs, batch_size, sh, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs
 
-def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
+def get_real_spherical_harmonics(coordinates, sphericart_obj):
     """
     Computes the real, cartesian spherical harmonics functions.
     :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
@@ -102,7 +102,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     :return: torch.tensor(N_batch, N_freqs)
     """
     sh_values = sphericart_obj.compute(coordinates)
-    return sh_values.to(device)
+    return sh_values
 
 
 def alm_from_radius_to_coordinate(alm, radiuses_index):
