@@ -93,7 +93,7 @@ def parse_yaml(path):
     return vae, optimizer, dataset, N_epochs, batch_size, sh, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs
 
-def get_real_spherical_harmonics(coordinates, sphericart_obj):
+def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     """
     Computes the real, cartesian spherical harmonics functions.
     :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
@@ -102,7 +102,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj):
     :return: torch.tensor(N_batch, N_freqs)
     """
     sh_values = sphericart_obj.compute(coordinates)
-    return sh_values
+    return sh_values.to(device)
 
 
 def alm_from_radius_to_coordinate(alm, radiuses_index):
@@ -112,10 +112,6 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     """
-    print("RADIUSES", radiuses_index.dtype)
-    print(alm.shape)
-    print(torch.max(radiuses_index))
-    print("\n\n\n")
     return alm[:, radiuses_index, :]
 
 def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
