@@ -15,7 +15,7 @@ import numpy as np
 #from astropy.coordinates import cartesian_to_spherical
 import starfile
 
-def get_radius_indexes(freqs):
+def get_radius_indexes(freqs, device):
     """
     Link the index of the unique indexes to the corresponding frequencies
     :param freqs: torch.tensor(side_hape**2, 3)
@@ -23,7 +23,7 @@ def get_radius_indexes(freqs):
     """
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     unique_radius = torch.unique(radius)
-    unique_indexes = torch.linspace(0, len(unique_radius), len(unique_radius), dtype=torch.int)
+    unique_indexes = torch.linspace(0, len(unique_radius), len(unique_radius), dtype=torch.int, device=device)
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
     return indexes.to(torch.int32), unique_radius
@@ -54,7 +54,7 @@ def parse_yaml(path):
     apix_downsize = Npix * apix /Npix_downsize
 
     frequencies = Grid(256, 1, device)
-    radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs)
+    radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, device)
     N_unique_radiuses = len(unique_radiuses)
 
     encoder = MLP(Npix_downsize**2,
