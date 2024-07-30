@@ -103,7 +103,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj):
     """
     coordinates = coordinates.reshape(-1, 3)
     print(coordinates.shape)
-    sh_values = sphericart_obj.compute(coordinates.detach().cpu().numpy())
+    sh_values = sphericart_obj.compute(coordinates)
     return sh_values
 
 
