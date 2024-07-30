@@ -34,11 +34,11 @@ class ImageDataSet(Dataset):
 
         #Reading the translations. ReLion may express the translations divided by apix. So we need to multiply by apix to recover them in Å
         if "rlnOriginXAngst" in particles_df:
-            shiftX = torch.from_numpy(np.array(particles_df["rlnOriginXAngst"], dtype=np.float32))
-            shiftY = torch.from_numpy(np.array(particles_df["rlnOriginYAngst"], dtype=np.float32))
+            shiftX = torch.from_numpy(np.array(particles_df["rlnOriginXAngst"].values, dtype=np.float32))
+            shiftY = torch.from_numpy(np.array(particles_df["rlnOriginYAngst"].values, dtype=np.float32))
         else:
-            shiftX = torch.from_numpy(np.array(particles_df["rlnOriginX"] * self.apix, dtype=np.float32))
-            shiftY = torch.from_numpy(np.array(particles_df["rlnOriginY"] * self.apix, dtype=np.float32))
+            shiftX = torch.from_numpy(np.array(particles_df["rlnOriginX"].values * self.apix, dtype=np.float32))
+            shiftY = torch.from_numpy(np.array(particles_df["rlnOriginY"].values * self.apix, dtype=np.float32))
 
         self.poses_translation = torch.tensor(torch.vstack([shiftY, shiftX]).T, dtype=torch.float32)
         self.poses = poses
