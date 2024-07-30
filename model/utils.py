@@ -61,7 +61,7 @@ def parse_yaml(path):
                   experiment_settings["latent_dimension"] * 2,
                   experiment_settings["encoder"]["hidden_dimensions"], network_type="encoder", device=device,
                   latent_type="continuous")
-    decoder = MLP(experiment_settings["latent_dimension"], N_unique_radiuses,
+    decoder = MLP(experiment_settings["latent_dimension"], N_unique_radiuses*(l_max+1)**2,
                   experiment_settings["decoder"]["hidden_dimensions"], network_type="decoder", device=device)
 
     vae = VAE(encoder, decoder, device, latent_dim=experiment_settings["latent_dimension"], lmax=l_max)
