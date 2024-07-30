@@ -1,0 +1,92 @@
+import torch
+import model
+import numpy as np
+from model.grid import Grid, rotate_grid
+from model import utils
+import wandb
+import argparse
+import model.utils
+from tqdm import tqdm
+from time import time
+from torch.utils.data import DataLoader
+
+parser_arg = argparse.ArgumentParser()
+parser_arg.add_argument('--experiment_yaml', type=str, required=True)
+parser_arg.add_argument('--debug', type=bool, required=False)
+
+
+def train(yaml_setting_path, debug_mode):
+    """
+    train a VAE network
+    :param yaml_setting_path: str, path the yaml containing all the details of the experiment
+    :return:
+    """
+    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, radius_indexes, experiment_settings, device, \
+        scheduler, freqs = model.utils.parse_yaml(
+        yaml_setting_path)
+    if experiment_settings["resume_training"]["model"] != "None":
+        name = f"experiment_{experiment_settings['name']}_resume"
+    else:
+        name = f"experiment_{experiment_settings['name']}"
+    if not debug_mode:
+        wandb.init(
+            # Set the project where this run will be logged
+            project="vaeSphericalHarmonics",
+            # We pass a run name (otherwise it’ll be randomly assigned, like sunshine-lollypop-10)
+            name=name,
+
+            # Track hyperparameters and run metadata
+            config={
+                "learning_rate": experiment_settings["optimizer"]["learning_rate"],
+                "architecture": "VAE",
+                "dataset": experiment_settings["star_file"],
+                "epochs": experiment_settings["N_epochs"],
+            })
+
+    for epoch in range(N_epochs):
+        print("Epoch number:", epoch)
+        tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
+
+        #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
+        data_loader = tqdm(
+            iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
+        start_tot = time()
+        for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
+            # start = time()
+            batch_images = batch_images.to(device)
+            batch_poses = batch_poses.to(device)
+            flattened_batch_images = batch_images.flatten(start_dim=-2)
+            latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
+            alms_per_radius = vae.decode(latent_variables)
+            alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
+            all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
+            all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj)
+            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph)
+            loss = model.loss.compute_loss(predicted_images, batch_images, latent_mean, latent_std, experiment_settings,
+                                tracking_metrics, experiment_settings["loss_weights"])
+
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+        end_tot = time()
+        print("TOTAL TIME", end_tot - start_tot)
+
+        if scheduler:
+            scheduler.step()
+
+        if not debug_mode:
+            model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer)
+
+
+if __name__ == '__main__':
+    wandb.login()
+
+    args = parser_arg.parse_args()
+    path = args.experiment_yaml
+    debug_mode = args.debug
+    from torch import autograd
+
+    with autograd.detect_anomaly():
+        train(path, debug_mode)
+
