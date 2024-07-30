@@ -12,7 +12,7 @@ from mlp import MLP
 import yaml
 from grid import Grid
 import numpy as np
-from astropy.coordinates import cartesian_to_spherical
+#from astropy.coordinates import cartesian_to_spherical
 import starfile
 
 def get_radius_indexes(freqs):
