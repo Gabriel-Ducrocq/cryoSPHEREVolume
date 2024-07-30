@@ -1,8 +1,5 @@
 import torch
-if torch.cuda.is_available():
-    import sphericart.torch as sct
-else:
-    import sphericart as sct
+import sphericart as sct
 
 import wandb
 import sys
