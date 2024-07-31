@@ -103,7 +103,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     batch_size = coordinates.shape[0]
     coordinates = coordinates.reshape(-1, 3)
     r = sphericart_obj.compute(coordinates.detach().cpu().numpy())
-    print("SPHER1", np.sum(r == np.nan))
+    print("SPHER1", np.sum(np.isnan(r)))
     print("SPHER1", np.mean(r == np.nan))
     print("SPHERTOT", np.mean(r))
     print("SPHER", coordinates[np.sum(r, axis=-1) == np.nan])
