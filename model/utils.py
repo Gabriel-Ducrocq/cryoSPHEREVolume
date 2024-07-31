@@ -123,6 +123,8 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2)
     """
+    print(alm_per_coord.shape)
+    print(spherical_harmonics.shape)
     return torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
 
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer):
