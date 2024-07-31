@@ -129,6 +129,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     print("SPHERE", spherical_harmonics[:, indexes == 0])
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
+    print("NAN ?", torch.sum(images_radius_0_nan))
     return images_radius_0_nan
 
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer):

@@ -65,6 +65,7 @@ def train(yaml_setting_path, debug_mode):
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radius_indexes)
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
+            print("NLL", nll)
             nll.backward()
             optimizer.step()
             optimizer.zero_grad()
