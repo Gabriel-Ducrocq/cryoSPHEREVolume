@@ -47,14 +47,14 @@ def train(yaml_setting_path, debug_mode):
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
-        _, hartley_proj, _, _  = dataset.__getitem__([i for i in range(5000)])
-        images_std = torch.std(hartley_proj, dim=0, keepdim=True)
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
         data_loader = tqdm(
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
             # start = time()
+            ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
+            images_std = torch.std(batch_images, dim=0, keepdim=True)
             batch_images = batch_images.to(device)/images_std
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
