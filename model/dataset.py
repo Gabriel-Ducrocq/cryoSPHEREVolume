@@ -54,7 +54,6 @@ class ImageDataSet(Dataset):
             self.down_apix = self.side_shape * self.apix /self.down_side_shape
 
         self.invert_data = invert_data
-        self.images_std = self.estimate_image_std()
 
 
     def estimate_image_std(self):
@@ -62,8 +61,6 @@ class ImageDataSet(Dataset):
         _, hartley_proj, _, _ = self.__getitem__([i for i in range(1000)])
         return torch.std(hartley_proj, dim=0, keepdim=True)
 
-    def standardize(self, images, device="cpu"):
-        return (images - self.avg_image.to(device))/self.std_image.to(device)
 
     def __len__(self):
         return self.particles_df.shape[0]
