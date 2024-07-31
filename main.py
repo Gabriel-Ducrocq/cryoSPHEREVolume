@@ -3,6 +3,7 @@ import model
 import numpy as np
 from model.grid import Grid, rotate_grid
 from model import utils
+from model import loss
 import wandb
 import argparse
 import model.utils
@@ -62,7 +63,7 @@ def train(yaml_setting_path, debug_mode):
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
             all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph)
-            loss = model.loss.compute_loss(predicted_images, batch_images, latent_mean, latent_std, experiment_settings,
+            loss = loss.compute_loss(predicted_images, batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
 
             loss.backward()

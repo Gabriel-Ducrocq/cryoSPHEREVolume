@@ -46,7 +46,6 @@ def parse_yaml(path):
         device = "cpu"
 
     l_max = experiment_settings["l_max"]
-    print("DEVICE:", device)
     particles_path = experiment_settings["particles_path"]
     apix = image_settings["apix"]
     Npix = image_settings["Npix"]
@@ -114,8 +113,6 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     """
-    print("SHAPESHAPE")
-    print(radiuses_index.shape)
     return alm[:, radiuses_index, :]
 
 def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
@@ -126,8 +123,6 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2)
     """
-    print(alm_per_coord.shape)
-    print(spherical_harmonics.shape)
     return torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
 
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer):
