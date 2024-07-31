@@ -43,7 +43,8 @@ def train(yaml_setting_path, debug_mode):
                 "dataset": experiment_settings["star_file"],
                 "epochs": experiment_settings["N_epochs"],
             })
-
+    data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=True, num_workers=4, drop_last=True))
+    images_std = next(data_loader_std)
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
@@ -55,8 +56,7 @@ def train(yaml_setting_path, debug_mode):
             # start = time()
             ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
             batch_images = batch_images.to(device)
-            images_std = torch.std(batch_images, dim=0, keepdim=True)
-            batch_images/= images_std
+            batch_images /= images_std
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
