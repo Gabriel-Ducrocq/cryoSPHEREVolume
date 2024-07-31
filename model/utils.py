@@ -52,7 +52,7 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    frequencies = Grid(256, 1, device)
+    frequencies = Grid(image_settings["Npix_downsize"], image_settings["apix"], device)
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, device)
     N_unique_radiuses = len(unique_radiuses)
 
