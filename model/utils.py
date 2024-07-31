@@ -26,6 +26,7 @@ def get_radius_indexes(freqs, device):
     unique_indexes = torch.linspace(0, len(unique_radius)-1, len(unique_radius), dtype=torch.int, device=device)
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
+    print("INDEXES", indexes.shape)
     return indexes.to(torch.int32)[:, 0], unique_radius
 
 def parse_yaml(path):
