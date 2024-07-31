@@ -22,7 +22,7 @@ def get_radius_indexes(freqs, device):
     :return: torch.tensor(side_shape**2)
     """
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
-    unique_radius = torch.unique(radius)
+    unique_radius = torch.unique(radius, sorted=True)
     unique_indexes = torch.linspace(0, len(unique_radius)-1, len(unique_radius), dtype=torch.int, device=device)
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
@@ -122,7 +122,7 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     """
     return alm[:, radiuses_index, :]
 
-def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
+def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     """
     Computes the Hartley transform through a spherical harmonics synthesis
     :param alm: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
@@ -130,7 +130,11 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics):
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2)
     """
-    return torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
+    #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
+    #estimates provided by the neural net
+    images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
+    images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
+    return images_radius_0_nan
 
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer):
     """
