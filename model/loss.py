@@ -35,6 +35,8 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     :return:
     """
     print("IMAGES", predicted_images)
+    print("IMAGES", predicted_images.shape)
+    print("IMAGES", images.shape)
     print("MAX IMAGES", torch.max(predicted_images))
     print("MIN IMAGES", torch.min(predicted_images))
     rmsd = compute_image_loss(images, predicted_images)
