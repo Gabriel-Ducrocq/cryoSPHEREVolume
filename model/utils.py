@@ -23,7 +23,7 @@ def get_radius_indexes(freqs, device):
     """
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     unique_radius = torch.unique(radius)
-    unique_indexes = torch.linspace(0, len(unique_radius), len(unique_radius), dtype=torch.int, device=device)
+    unique_indexes = torch.linspace(0, len(unique_radius)-1, len(unique_radius), dtype=torch.int, device=device)
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
     return indexes.to(torch.int32), unique_radius
