@@ -34,6 +34,8 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     :param loss_weights: dict, containing the strength of losses for each loss
     :return:
     """
+    print(images.shape)
+    print(predicted_images.shape)
     rmsd = compute_image_loss(images, predicted_images)
     KL_prior_latent = compute_KL_prior_latent(latent_mean, latent_std, experiment_settings["epsilon_kl"])
 
