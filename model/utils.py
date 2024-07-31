@@ -114,7 +114,7 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     :return: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     """
     print("ALLMALMALMALMALM")
-    print(alm.shape())
+    print(alm.shape)
     print(torch.max(radiuses_index))
     return alm[:, radiuses_index, :]
 
