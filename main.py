@@ -54,8 +54,9 @@ def train(yaml_setting_path, debug_mode):
         for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
             # start = time()
             ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
+            batch_images = batch_images.to(device)
             images_std = torch.std(batch_images, dim=0, keepdim=True)
-            batch_images = batch_images.to(device)/images_std
+            batch_images/= images_std
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
