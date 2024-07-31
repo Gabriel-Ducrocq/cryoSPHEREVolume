@@ -39,6 +39,7 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     print("IMAGES", images.shape)
     print("MAX IMAGES", torch.max(predicted_images))
     print("MIN IMAGES", torch.min(predicted_images))
+    print("TRUE IMAGES", images)
     rmsd = compute_image_loss(images, predicted_images)
     KL_prior_latent = compute_KL_prior_latent(latent_mean, latent_std, experiment_settings["epsilon_kl"])
 
