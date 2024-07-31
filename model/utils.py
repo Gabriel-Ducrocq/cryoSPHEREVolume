@@ -103,7 +103,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     batch_size = coordinates.shape[0]
     coordinates = coordinates.reshape(-1, 3)
     r = sphericart_obj.compute(coordinates.detach().cpu().numpy())
-    print("SPHER", coordinates[r == np.nan])
+    print("SPHER", coordinates[np.sum(r, axis=-1) == np.nan])
     sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device).reshape(batch_size, -1, (l_max+1)**2)
     return sh_values
 
