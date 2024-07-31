@@ -102,7 +102,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     :return: torch.tensor(N_batch, N_freqs)
     """
     coordinates = coordinates.reshape(-1, 3)
-    sh_values = sphericart_obj.compute(coordinates.detach().cpu().numpy()).to(device)
+    sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32)
     return sh_values
 
 
