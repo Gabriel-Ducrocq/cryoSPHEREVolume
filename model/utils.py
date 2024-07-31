@@ -102,13 +102,6 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
     batch_size = coordinates.shape[0]
     coordinates = coordinates.reshape(-1, 3)
-    r = sphericart_obj.compute(coordinates.detach().cpu().numpy())
-    print("SPHER1", np.sum(np.isnan(r)))
-    print("SPHER1", np.mean(r == np.nan))
-    print("SPHERTOT", np.mean(r))
-    print("SPHER", coordinates[np.sum(np.isnan(r), axis=-1) > 0])
-    print("SPHER", coordinates[np.sum(np.isnan(r), axis=-1) > 0].shape)
-    print(r.shape)
     sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device).reshape(batch_size, -1, (l_max+1)**2)
     return sh_values
 
@@ -132,6 +125,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     """
     #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
     #estimates provided by the neural net
+    print("SPHERE", spherical_harmonics[:, indexes == 0])
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
     return images_radius_0_nan
