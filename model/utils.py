@@ -101,8 +101,10 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
     :return: torch.tensor(N_batch, N_freqs)
     """
+    batch_size = coordinates.shape[0]
+    l_max = sphericart_obj.l_max
     coordinates = coordinates.reshape(-1, 3)
-    sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32)
+    sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32).reshape(batch_size, -1, (l_max+1)**2)
     return sh_values
 
 
