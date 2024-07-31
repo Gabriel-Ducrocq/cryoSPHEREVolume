@@ -61,6 +61,7 @@ def train(yaml_setting_path, debug_mode):
             alms_per_radius = vae.decode(latent_variables)
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
+            print("ALL COORD", torch.mean(all_coordinates))
             all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
             print("ALL SPH", torch.mean(all_sph))
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph)
