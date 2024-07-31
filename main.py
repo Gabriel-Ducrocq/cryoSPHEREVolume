@@ -47,7 +47,7 @@ def train(yaml_setting_path, debug_mode):
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
-        _, hartley_proj, _, _  = dataset([i for i in range(5000)])
+        _, hartley_proj, _, _  = dataset.__getitem__([i for i in range(5000)])
         images_std = torch.std(hartley_proj, dim=0, keepdim=True)
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
         data_loader = tqdm(
