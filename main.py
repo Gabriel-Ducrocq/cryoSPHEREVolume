@@ -22,7 +22,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, radius_indexes, experiment_settings, device, \
-        scheduler, freqs = model.utils.parse_yaml(
+        scheduler, freqs, l_max = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -60,7 +60,7 @@ def train(yaml_setting_path, debug_mode):
             alms_per_radius = vae.decode(latent_variables)
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
-            all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device)
+            all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph)
             loss = model.loss.compute_loss(predicted_images, batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
