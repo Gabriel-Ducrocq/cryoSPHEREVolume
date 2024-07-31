@@ -1,6 +1,7 @@
 import torch
 import model
 import numpy as np
+from time import time
 from model.grid import Grid, rotate_grid
 from model import utils
 from model import loss
@@ -54,6 +55,7 @@ def train(yaml_setting_path, debug_mode):
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
+            start_batch = time()
             # start = time()
             ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
             batch_images = batch_images.to(device)
@@ -70,9 +72,14 @@ def train(yaml_setting_path, debug_mode):
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
+            start_grad = time()
             nll.backward()
             optimizer.step()
             optimizer.zero_grad()
+            end_grad = time()
+            end_batch = time()
+            print("Time total:", end_batch - start_batch)
+            print("Gradient time:", end_grad - start_grad)
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
