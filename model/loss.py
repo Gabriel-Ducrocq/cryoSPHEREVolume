@@ -40,5 +40,5 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
     tracking_dict["kl_prior_latent"].append(KL_prior_latent.detach().cpu().numpy())
 
-    loss = rmsd #+ loss_weights["KL_prior_latent"]*KL_prior_latent
+    loss = rmsd + loss_weights["KL_prior_latent"]*KL_prior_latent
     return loss
