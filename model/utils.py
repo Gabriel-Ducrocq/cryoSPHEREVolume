@@ -129,6 +129,9 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     spherical_harmonics[:, indexes ==0, :] = 0
     print("SH MAX", torch.max(spherical_harmonics))
     print("SH MIN", torch.min(spherical_harmonics))
+    print("ALMS", alm_per_coord)
+    print("ALMS MIN", torch.min(alm_per_coord))
+    print("ALMS MIN", torch.max(alm_per_coord))
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
     return images_radius_0_nan
