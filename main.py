@@ -44,7 +44,8 @@ def train(yaml_setting_path, debug_mode):
                 "epochs": experiment_settings["N_epochs"],
             })
     data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=True, num_workers=4, drop_last=True))
-    images_std = next(data_loader_std)
+    images_for_std = next(data_loader_std)
+    images_std = torch.std(images_for_std)
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
