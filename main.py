@@ -54,7 +54,7 @@ def train(yaml_setting_path, debug_mode):
         start_tot = time()
         for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
             # start = time()
-            batch_images = batch_images.to(device)
+            batch_images = batch_images.to(device)/dataset.images_std
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
