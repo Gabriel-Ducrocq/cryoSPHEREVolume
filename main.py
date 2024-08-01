@@ -44,9 +44,11 @@ def train(yaml_setting_path, debug_mode):
                 "dataset": experiment_settings["star_file"],
                 "epochs": experiment_settings["N_epochs"],
             })
-    #data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=True, num_workers=4, drop_last=True))
-    #images_for_std = next(data_loader_std)
-    #images_std = torch.std(images_for_std)
+    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=True, num_workers=4, drop_last=True))
+    for batch_num, (indexes, images_for_std, batch_poses, _) in enumerate(data_loader_std):
+        images_std = torch.std(images_for_std, dim=0, keepdim=True).to(device)
+        break
+
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
@@ -59,7 +61,6 @@ def train(yaml_setting_path, debug_mode):
             # start = time()
             ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
             batch_images = batch_images.to(device)
-            images_std = torch.std(batch_images, dim=0, keepdim=True)
             batch_images /= images_std
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
