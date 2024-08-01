@@ -45,7 +45,7 @@ def train(yaml_setting_path, debug_mode):
                 "epochs": experiment_settings["N_epochs"],
             })
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=True, num_workers=4, drop_last=True))
-    for batch_num, (indexes, images_for_std, batch_poses, _) in enumerate(data_loader_std):
+    for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std, dim=0, keepdim=True).to(device)
         images_mean = torch.mean(images_for_std, dim=0, keepdim=True).to(device)
         break
