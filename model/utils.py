@@ -178,7 +178,8 @@ def hartley_to_real(images, device):
     fft_images = hartley_to_fourier(images, device)
     return fourier_to_real(fft_images)
 
-def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=None, true_images=None, predicted_images=None, real_image=None):
+def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
+                     images_mean = None, images_std = None):
     """
     Monitors the training process through wandb and saving masks and models
     :param mask:
@@ -196,7 +197,10 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
     true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Original image")
-    predicted_image_wandb = wandb.Image(real_predicted_image[0].detach().cpu().numpy()[:, :, None],
+    pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
+    pred_im *= images_std.detach().cpu().numpy()
+    pred_im += images_mean.detach().cpu().numpy()
+    predicted_image_wandb = wandb.Image(pred_im,
                                          caption="Predicted images")
     wandb.log({"Images/true_image": real_image_again_wandb})
     wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
