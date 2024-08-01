@@ -44,7 +44,8 @@ def train(yaml_setting_path, debug_mode):
                 "dataset": experiment_settings["star_file"],
                 "epochs": experiment_settings["N_epochs"],
             })
-    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=True, num_workers=4, drop_last=True))
+    ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
+    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std, dim=0, keepdim=True).to(device)
         images_mean = torch.mean(images_for_std, dim=0, keepdim=True).to(device)
@@ -54,8 +55,9 @@ def train(yaml_setting_path, debug_mode):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
+        ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
         data_loader = tqdm(
-            iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
+            iter(DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
@@ -88,6 +90,7 @@ def train(yaml_setting_path, debug_mode):
             end_batch = time()
             print("Time total:", end_batch - start_batch)
             print("Gradient time:", end_grad - start_grad)
+            break
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
