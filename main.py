@@ -64,6 +64,8 @@ def train(yaml_setting_path, debug_mode):
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
             non_standardized = batch_images.flatten(start_dim=1, end_dim=2)
+            print("MOMENTS", images_mean.shape)
+            print("MOMENTS", images_std.shape)
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
