@@ -147,7 +147,7 @@ def hartley_to_fourier(image,device,  mu=None, std=None ):
     assert side_shape % 2 == 0, "Image must have an even number of pixels"
     ## The image now has zero at the center and the lowest frequency at the top left.
     image_square = image.reshape(batch_size, side_shape, side_shape)
-    if mu and std:
+    if mu is not None and std is not None:
         image_square*=std
         image_square+=mu
 
