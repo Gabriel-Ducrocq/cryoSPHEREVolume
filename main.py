@@ -55,9 +55,8 @@ def train(yaml_setting_path, debug_mode):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
-        ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
         data_loader = tqdm(
-            iter(DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, drop_last=True)))
+            iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
@@ -90,7 +89,6 @@ def train(yaml_setting_path, debug_mode):
             end_batch = time()
             print("Time total:", end_batch - start_batch)
             print("Gradient time:", end_grad - start_grad)
-            break
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
