@@ -199,9 +199,9 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
                                          caption="Original image")
     predicted_image_wandb = wandb.Image(real_predicted_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Predicted images")
-    wandb.log({"true_image": real_image_again_wandb})
-    wandb.log({"true_image_ony_real": true_image_ony_real_wandb})
-    wandb.log({"predicted_image": predicted_image_wandb})
+    wandb.log({"Images/true_image": real_image_again_wandb})
+    wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
+    wandb.log({"Images/predicted_image": predicted_image_wandb})
     torch.save(vae, experiment_settings["folder_path"] + "models/full_model" + str(epoch))
 
 
