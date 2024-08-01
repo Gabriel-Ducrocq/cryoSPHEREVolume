@@ -165,7 +165,7 @@ def fourier_to_real(fft_images):
     :param fft_images: torch.tensor(batch_size, side_shape, side_shape) of images in fourier space
     :return: torch.tensor(batch_size, side_shape, side_shape)
     """
-    return torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(fft_images, dim=(-1, -2))))
+    return torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(fft_images, dim=(-1, -2)))).real
 
 def hartley_to_real(images, device):
     """
