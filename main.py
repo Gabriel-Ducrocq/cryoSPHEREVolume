@@ -47,6 +47,7 @@ def train(yaml_setting_path, debug_mode):
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=True, num_workers=4, drop_last=True))
     for batch_num, (indexes, images_for_std, batch_poses, _) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std, dim=0, keepdim=True).to(device)
+        images_mean = torch.mean(images_for_std, dim=0, keepdim=True).to(device)
         break
 
     for epoch in range(N_epochs):
@@ -56,12 +57,14 @@ def train(yaml_setting_path, debug_mode):
         data_loader = tqdm(
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
-        for batch_num, (indexes, batch_images, batch_poses, _) in enumerate(data_loader):
+        for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
             # start = time()
             ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
+            original_images = original_images.to(device)
             batch_images = batch_images.to(device)
-            batch_images /= images_std
+            non_standardized = batch_images.flatten(start_dim=1, end_dim=2)
+            batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
@@ -91,7 +94,9 @@ def train(yaml_setting_path, debug_mode):
             scheduler.step()
 
         if not debug_mode:
-            model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer)
+            tracking_metrics, epoch, experiment_settings, vae, optimizer, device = None, true_images = None, predicted_images = None, real_image = None
+            model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=device,
+                    true_images=non_standardized, predicted_images=predicted_images, real_image=original_images)
 
 
 if __name__ == '__main__':

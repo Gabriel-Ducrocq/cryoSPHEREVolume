@@ -116,4 +116,4 @@ class ImageDataSet(Dataset):
         #    print("INVERTING")
         #    proj *= -1
 
-        return idx, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix
+        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix
