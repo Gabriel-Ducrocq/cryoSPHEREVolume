@@ -192,9 +192,14 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
     wandb.log({"lr":optimizer.param_groups[0]['lr']})
-    wandb.log({"true_image": real_image_again[0].detach().cpu().numpy()[:, :, None]})
-    wandb.log({"true_image_ony_real": real_image[0].detach().cpu().numpy()[:, :, None]})
-    wandb.log({"predicted_image": real_predicted_image[0].detach().cpu().numpy()[:, :, None]})
+    real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
+    true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
+                                         caption="Original image")
+    predicted_image_wandb = wandb.Image(real_predicted_image[0].detach().cpu().numpy()[:, :, None],
+                                         caption="Predicted images")
+    wandb.log({"true_image": real_image_again_wandb})
+    wandb.log({"true_image_ony_real": true_image_ony_real_wandb})
+    wandb.log({"predicted_image": predicted_image_wandb})
     torch.save(vae, experiment_settings["folder_path"] + "models/full_model" + str(epoch))
 
 
