@@ -192,6 +192,8 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
     wandb.log({"lr":optimizer.param_groups[0]['lr']})
+    print("TESTESTESTEST")
+    print(real_image_again[0].detach().cpu().numpy()[:, :, None].shape)
     real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
     true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Original image")
