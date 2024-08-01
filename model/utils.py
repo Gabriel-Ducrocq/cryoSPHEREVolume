@@ -136,7 +136,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     return images_radius_0_nan
 
 
-def hartley_to_fourier(image, device):
+def hartley_to_fourier(image,device,  mu=None, std=None ):
     """
     Converts a Hartley image into a FFT image
     :param image: torch.tensor(batch_size, side_shape**2). Once reshaped to (side_shape, side_shape), the frequency 0 is at the center
@@ -147,6 +147,10 @@ def hartley_to_fourier(image, device):
     assert side_shape % 2 == 0, "Image must have an even number of pixels"
     ## The image now has zero at the center and the lowest frequency at the top left.
     image_square = image.reshape(batch_size, side_shape, side_shape)
+    if mu and std:
+        image_square*=std
+        image_square+=mu
+
     low_x = image_square[:, 0, :]
     low_y = image_square[:, :, 0]
     ## Since the Fourier transform is side_shape periodic, we can safely remove the lowest frequency and deal with it
@@ -168,14 +172,14 @@ def fourier_to_real(fft_images):
     """
     return torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(fft_images, dim=(-1, -2)))).real
 
-def hartley_to_real(images, device):
+def hartley_to_real(images, device, mu=None, std=None):
     """
     Goes from Hartley space to real space
     :param images: torch.tensor(batch_size, side_shape, side_shape) of images in Hartley space.
     :param device: device, either gpu or cpu
     :return: torch.tensor(batch_size, side_shape, side_shape) of images in real space.
     """
-    fft_images = hartley_to_fourier(images, device)
+    fft_images = hartley_to_fourier(images, device, mu, std)
     return fourier_to_real(fft_images)
 
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
@@ -190,7 +194,7 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     :return:
     """
     real_image_again = hartley_to_real(true_images[:1], device)
-    real_predicted_image = hartley_to_real(predicted_images[:1], device)
+    real_predicted_image = hartley_to_real(predicted_images[:1], device, images_mean, images_std)
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
     wandb.log({"lr":optimizer.param_groups[0]['lr']})
@@ -198,8 +202,6 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Original image")
     pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
-    pred_im *= images_std.detach().cpu().numpy()[0, :, :, None]
-    pred_im += images_mean.detach().cpu().numpy()[0, :, :, None]
     print("PRED IM", pred_im.shape)
     predicted_image_wandb = wandb.Image(pred_im,
                                          caption="Predicted images")
