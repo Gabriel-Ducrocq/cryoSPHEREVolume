@@ -94,7 +94,6 @@ def train(yaml_setting_path, debug_mode):
             scheduler.step()
 
         if not debug_mode:
-            tracking_metrics, epoch, experiment_settings, vae, optimizer, device = None, true_images = None, predicted_images = None, real_image = None
             model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=device,
                     true_images=non_standardized, predicted_images=predicted_images, real_image=original_images)
 
