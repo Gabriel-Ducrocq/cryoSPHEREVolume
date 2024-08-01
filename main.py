@@ -86,7 +86,8 @@ def train(yaml_setting_path, debug_mode):
             end_batch = time()
             print("Time total:", end_batch - start_batch)
             print("Gradient time:", end_grad - start_grad)
-
+            break
+            
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
 

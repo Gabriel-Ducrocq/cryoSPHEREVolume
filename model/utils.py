@@ -26,7 +26,6 @@ def get_radius_indexes(freqs, device):
     unique_indexes = torch.linspace(0, len(unique_radius)-1, len(unique_radius), dtype=torch.int, device=device)
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
-    print("INDEXES", indexes.shape)
     return indexes.to(torch.int32)[:, 0], unique_radius
 
 def parse_yaml(path):
@@ -143,7 +142,7 @@ def hartley_to_fourier(image, device):
     :param image: torch.tensor(batch_size, side_shape**2). Once reshaped to (side_shape, side_shape), the frequency 0 is at the center
     :return: torch.tensor(batch_size, side_shape, side_shape)
     """
-    side_shape = torch.sqrt(image.shape[1]).int()
+    side_shape = int(np.sqrt(image.shape[1]))
     batch_size = image.shape[0]
     assert side_shape % 2 == 0, "Image must have an even number of pixels"
     ## The image now has zero at the center and the lowest frequency at the top left.
