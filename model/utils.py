@@ -146,7 +146,7 @@ def hartley_to_fourier(image, device):
     batch_size = image.shape[0]
     assert side_shape % 2 == 0, "Image must have an even number of pixels"
     ## The image now has zero at the center and the lowest frequency at the top left.
-    image_square = image.reshape(side_shape, side_shape)
+    image_square = image.reshape(batch_size, side_shape, side_shape)
     low_x = image_square[:, 0, :]
     low_y = image_square[:, :, 0]
     ## Since the Fourier transform is side_shape periodic, we can safely remove the lowest frequency and deal with it
