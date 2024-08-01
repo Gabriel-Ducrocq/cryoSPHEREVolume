@@ -198,8 +198,9 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Original image")
     pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
-    pred_im *= images_std.detach().cpu().numpy()
-    pred_im += images_mean.detach().cpu().numpy()
+    pred_im *= images_std.detach().cpu().numpy()[0, :, :, None]
+    pred_im += images_mean.detach().cpu().numpy()[0, :, :, None]
+    print("PRED IM", pred_im.shape)
     predicted_image_wandb = wandb.Image(pred_im,
                                          caption="Predicted images")
     wandb.log({"Images/true_image": real_image_again_wandb})
