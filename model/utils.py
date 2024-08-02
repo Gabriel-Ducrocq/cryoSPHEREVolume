@@ -234,7 +234,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics):
     :param spherical_harmonics: (batch_size, s**2, (l_max + 1)**2)
     :return:
     """
-    return torch.einsum("s l,b l e -> b s e", spherical_harmonics,torch.block_diag(wigner_matrices))
+    return torch.einsum("s l,b l e -> b s e", spherical_harmonics,torch.block_diag(*wigner_matrices))
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
