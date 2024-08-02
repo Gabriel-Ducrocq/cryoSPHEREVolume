@@ -302,7 +302,7 @@ result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
 
 result_e3nn = e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], rotated_grid, normalize=True)
 
-euler_angles = pytorch3d.transforms.matrix_to_euler_angles(rot_mat, "YXY")
+euler_angles = pytorch3d.transforms.matrix_to_euler_angles(torch.transpose(rot_mat, dim0=-1, dim1=-2), "YXY")
 euler_angles = euler_angles.detach().cpu()
 wigner_matrices = compute_wigner_D(l_max, euler_angles[:,0], euler_angles[:,1], euler_angles[:,2])
 #spher = get_real_spherical_harmonics(grid, sh, device, l_max)
