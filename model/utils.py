@@ -254,6 +254,7 @@ start_new = time()
 all_wigner = apply_wigner_D(l_max, alpha, beta, gamma)
 result = apply_wigner_D(all_wigner, sh_values_new)
 end_new = time()
+print("New version", end_new - end_old)
 
 
 
