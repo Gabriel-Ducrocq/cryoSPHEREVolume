@@ -306,6 +306,8 @@ wigner_matrices = compute_wigner_D(l_max, euler_angles[:,0], euler_angles[:,1], 
 spher = get_real_spherical_harmonics(grid, sh, device, l_max)
 result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 
+
+print("\n\n\n\n")
 print(result1)
 print(result2)
 print("\n\n")
