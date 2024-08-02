@@ -227,7 +227,7 @@ def compute_wigner_D(l_max, alpha, beta, gamma):
 
     return r
 
-def apply_wigner_D(wigner_matrices, spherical_harmonics):
+def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     """
 
     :param lmax:
@@ -235,9 +235,14 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics):
     :param spherical_harmonics: (batch_size, s**2, (l_max + 1)**2)
     :return:
     """
-    print(spherical_harmonics.shape)
-    return torch.einsum("s l,b l e -> b s e", spherical_harmonics,torch.block_diag(*wigner_matrices))
+    res = []
+    for l in range(l_max+1):
+        start = 0
+        r = torch.einsum("s l,b l e -> b s e", spherical_harmonics[:, start:start+(2*l+1)],wigner_matrices[l])
+        start += 2*l+1
+        res.append(r)
 
+    return res
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 l_max = 9
