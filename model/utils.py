@@ -223,7 +223,7 @@ def compute_wigner_D(l_max, alpha, beta, gamma):
     for l in range(l_max):
         r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
         print("TEST", r_inter.shape)
-        r.append(r_inter)
+        r.append(r_inter.to(device))
 
     return r
 
@@ -259,7 +259,6 @@ spherical_har_wigner_coord = torch.randn((256*256, 3), dtype=torch.float32)
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
 start_new = time()
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
-all_wigner = all_wigner.to(device)
 result = apply_wigner_D(all_wigner, sh_values_new, l_max)
 end_new = time()
 print("New version", end_new - end_old)
