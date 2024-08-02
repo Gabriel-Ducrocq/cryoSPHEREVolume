@@ -260,6 +260,7 @@ sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().c
 start_computing = time()
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 end_computing = time()
+print("Computing time", end_computing - start_computing)
 start_new = time()
 result = apply_wigner_D(all_wigner, sh_values_new, l_max)
 end_new = time()
