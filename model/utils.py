@@ -295,7 +295,7 @@ print("New version", end_new - start_new)
 #print("\n\n\n\n")
 #print(-np.sqrt(2)*np.real(spherHarmPython_bis[0]))
 
-grid = torch.randn(( 1, 10, 3), dtype = torch.float32, device=device)
+grid = torch.randn(( 1, 1, 3), dtype = torch.float32, device=device)
 rot_mat = pytorch3d.transforms.random_rotations(1, dtype=torch.float32, device=device)
 rotated_grid = torch.einsum("b a q, b r q -> b r a", rot_mat, grid)
 result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
@@ -308,6 +308,8 @@ result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 
 print(result1)
 print(result2)
+print("\n\n")
+print(torch.abs(result1 - result2))
 
 
 
