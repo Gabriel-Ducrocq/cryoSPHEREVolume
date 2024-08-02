@@ -300,6 +300,7 @@ rotated_grid = torch.einsum("b a q, b r q -> b r a", rot_mat, grid)
 result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
 
 euler_angles = pytorch3d.transforms.matrix_to_euler_angles(rot_mat, "YXY")
+euler_angles = euler_angles.detach().cpu()
 wigner_matrices = compute_wigner_D(l_max, euler_angles[0,0], euler_angles[0,1], euler_angles[0,2])
 spher = get_real_spherical_harmonics(grid, sh, device, l_max)
 result2 = apply_wigner_D(wigner_matrices, spher, l_max)
