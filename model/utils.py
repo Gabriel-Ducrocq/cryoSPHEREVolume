@@ -14,6 +14,8 @@ from grid import Grid
 import numpy as np
 #from astropy.coordinates import cartesian_to_spherical
 import starfile
+import e3nn
+from time import time
 
 def get_radius_indexes(freqs, device):
     """
@@ -214,6 +216,44 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
 
 def convert_spher_cartesian(lat, long, r):
     return np.array((r*np.sin(lat)*np.cos(long), r*np.sin(lat)*np.sin(long), r*np.cos(lat)))[None, :]
+
+
+def compute_wigner_D(l_max, alpha, beta, gamma):
+    r = []
+    for l in range(l_max):
+        r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
+        r.append(r_inter)
+
+    return r
+
+def apply_wigner_D(wigner_matrices, spherical_harmonics):
+    """
+
+    :param lmax:
+    :param wigner_matrices:
+    :param spherical_harmonics: (batch_size, s**2, (l_max + 1)**2)
+    :return:
+    """
+    return torch.einsum("s l,b l e -> b s e", spherical_harmonics,torch.block_diag(wigner_matrices))
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+l_max = 9
+sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
+coordinates = torch.randn((128*256*256, 3), dtype=torch.float32)
+start_old = time()
+spherical_harmonics = get_real_spherical_harmonics(coordinates, sh, device, l_max)
+end_old = time()
+print("Old version", end_old - start_old)
+alpha = torch.randn((128,))*torch.pi
+beta = torch.randn((128,))*torch.pi
+gamma = torch.randn((128,))*torch.pi
+spherical_har_wigner_coord = torch.randn((256*256, 3), dtype=torch.float32)
+sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
+start_new = time()
+all_wigner = apply_wigner_D(l_max, alpha, beta, gamma)
+result = apply_wigner_D(all_wigner, sh_values_new)
+end_new = time()
 
 
 
