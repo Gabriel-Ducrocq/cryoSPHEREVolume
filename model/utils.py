@@ -222,6 +222,7 @@ def compute_wigner_D(l_max, alpha, beta, gamma):
     r = []
     for l in range(l_max):
         r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
+        print("TEST", r_inter.shape)
         r.append(r_inter)
 
     return r
