@@ -300,6 +300,8 @@ rot_mat = pytorch3d.transforms.random_rotations(1, dtype=torch.float32, device=d
 rotated_grid = torch.einsum("b a q, b r q -> b r a", rot_mat, grid)
 result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
 
+result_e3nn = e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], rotated_grid, normalized=True)
+
 euler_angles = pytorch3d.transforms.matrix_to_euler_angles(rot_mat, "YXY")
 euler_angles = euler_angles.detach().cpu()
 wigner_matrices = compute_wigner_D(l_max, euler_angles[:,0], euler_angles[:,1], euler_angles[:,2])
@@ -308,8 +310,9 @@ result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 
 
 print("\n\n\n\n")
-print(result1)
-print(result2)
+print("One", result1)
+print("E3NN", result_e3nn)
+print("Two", result2)
 print("\n\n")
 print(torch.abs(result1 - result2))
 
