@@ -269,6 +269,7 @@ start_new = time()
 result = apply_wigner_D(all_wigner, sh_values_new, l_max)
 end_new = time()
 print("New version", end_new - start_new)
+del result
 start_new = time()
 result = apply_wigner_D(all_wigner, sh_values_new, l_max)
 end_new = time()
