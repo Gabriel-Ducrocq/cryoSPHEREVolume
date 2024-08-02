@@ -252,6 +252,10 @@ start_old = time()
 spherical_harmonics = get_real_spherical_harmonics(coordinates, sh, device, l_max)
 end_old = time()
 print("Old version", end_old - start_old)
+start_old = time()
+spherical_harmonics = get_real_spherical_harmonics(coordinates, sh, device, l_max)
+end_old = time()
+print("Old version", end_old - start_old)
 alpha = torch.randn((128,))*torch.pi
 beta = torch.randn((128,))*torch.pi
 gamma = torch.randn((128,))*torch.pi
