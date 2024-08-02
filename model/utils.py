@@ -16,6 +16,7 @@ import numpy as np
 import starfile
 import e3nn
 from time import time
+import pytorch3d
 
 def get_radius_indexes(freqs, device):
     """
@@ -239,13 +240,14 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     for l in range(l_max+1):
         start = 0
         r = torch.einsum("s l,b l e -> b s e", spherical_harmonics[:, start:start+(2*l+1)],wigner_matrices[l])
+        r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[:, start:start + (2 * l + 1)])
         start += 2*l+1
         res.append(r)
 
     return res
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-l_max = 25
+l_max = 20
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((128*256*256, 3), dtype=torch.float32)
 start_old = time()
@@ -291,6 +293,22 @@ print("New version", end_new - start_new)
 #print(spherHarmPython)
 #print("\n\n\n\n")
 #print(-np.sqrt(2)*np.real(spherHarmPython_bis[0]))
+
+grid = torch.randn(( 1, 10, 3), dtype = torch.float32, device=device)
+rot_mat = pytorch3d.transforms.random_rotations(1, dtype=torch.float32, device=device)
+rotated_grid = torch.einsum("b a q, b r q -> b r a", rot_mat, grid)
+result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
+
+euler_angles = pytorch3d.transforms.matrix_to_euler_angles(rot_mat, "YXY")
+wigner_matrices = compute_wigner_D(l_max, euler_angles[0,0], euler_angles[0,1], euler_angles[0,2])
+spher = get_real_spherical_harmonics(grid, sh, device, l_max)
+result2 = apply_wigner_D(wigner_matrices, spher, l_max)
+
+print(result1)
+print(result2)
+
+
+
 
 
 
