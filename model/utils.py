@@ -251,7 +251,7 @@ gamma = torch.randn((128,))*torch.pi
 spherical_har_wigner_coord = torch.randn((256*256, 3), dtype=torch.float32)
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
 start_new = time()
-all_wigner = apply_wigner_D(l_max, alpha, beta, gamma)
+all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 result = apply_wigner_D(all_wigner, sh_values_new)
 end_new = time()
 print("New version", end_new - end_old)
