@@ -2,7 +2,7 @@ import sys
 import os
 path = os.path.abspath("model")
 sys.path.append(path)
-#import mrc
+import mrc
 import yaml
 import torch
 import utils
