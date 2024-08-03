@@ -325,7 +325,7 @@ wign = e3nn.o3.wigner_D(l_max, euler_angles[:,2], euler_angles[:,1], euler_angle
 print(result_e3nn.shape)
 print(wign.shape)
 print("\n\n\n")
-print(torch.einsum("b q a, b a -> b q", wign, result_e3nn[:, 0]))
+print(torch.einsum("b q a, b a -> b q", wign.to(device), result_e3nn[:, 0]))
 print(e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], rotated_grid[:, :, [1, 2, 0]], normalize=True))
 
 
