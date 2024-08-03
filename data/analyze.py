@@ -49,7 +49,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
     ## I FEED THE RADIUSES DIRECTLY !
     predicted_image_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radiuses)
-    predicted_image = predicted_volume_flattened.reshape( 190, 190)
+    predicted_image = predicted_image_flattened.reshape( 190, 190)
     plt.imshow(predicted_image.detach().cpu().numpy())
     plt.savefig("data/dataset/image.png")
     plt.show()
