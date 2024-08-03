@@ -31,7 +31,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     all_coordinates = freqs_volume
     radiuses = torch.sqrt(torch.sum(all_coordinates**2, dim=-1))
     alms_per_coordinate = vae.decode(radiuses[None, :, None])
-    all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
+    all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
     ## I FEED THE RADIUSES DIRECTLY !
     predicted_volume_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radiuses)
     predicted_volume = predicted_volume_flattened.reshape(190, 190, 190)
