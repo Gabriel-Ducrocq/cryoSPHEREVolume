@@ -63,7 +63,10 @@ def parse_yaml(path):
                   experiment_settings["latent_dimension"] * 2,
                   experiment_settings["encoder"]["hidden_dimensions"], network_type="encoder", device=device,
                   latent_type="continuous")
-    decoder = MLP(experiment_settings["latent_dimension"], N_unique_radiuses*(l_max+1)**2,
+    #decoder = MLP(experiment_settings["latent_dimension"], N_unique_radiuses*(l_max+1)**2,
+    #              experiment_settings["decoder"]["hidden_dimensions"], network_type="decoder", device=device)
+
+    decoder = MLP(1, (l_max+1)**2,
                   experiment_settings["decoder"]["hidden_dimensions"], network_type="decoder", device=device)
 
     vae = VAE(encoder, decoder, device, latent_dim=experiment_settings["latent_dimension"], lmax=l_max)
@@ -92,7 +95,7 @@ def parse_yaml(path):
 
 
 
-    return vae, optimizer, dataset, N_epochs, batch_size, sh, radius_indexes, experiment_settings, device, \
+    return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs, l_max
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
@@ -112,7 +115,8 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
 def alm_from_radius_to_coordinate(alm, radiuses_index):
     """
     The alm that the network outputs are on per radius. We need to match the coordinate to the radiuses
-    :param alm: torch.tensor(N_batch, N_unique_radius, (l_max+1)**2)
+    #:param alm: torch.tensor(N_batch, N_unique_radius, (l_max+1)**2)
+    :param alm: torch.tensor(N_batch, N_unique_radius , (l_max+1)**2)
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
     :return: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     """
