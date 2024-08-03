@@ -96,7 +96,7 @@ def parse_yaml(path):
 
 
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, l_max
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """

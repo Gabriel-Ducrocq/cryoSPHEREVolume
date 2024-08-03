@@ -24,11 +24,11 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, l_max = utils.parse_yaml(
+        scheduler, freqs, freqs_volume,  l_max = utils.parse_yaml(
         yaml_setting_path)
     vae = torch.load(model_path)
     vae.eval()
-    all_coordinates = freqs.freqs_volume
+    all_coordinates = freqs_volume
     radiuses = torch.sqrt(torch.sum(all_coordinates**2, dim=-1))
     alms_per_coordinate = vae.decode(radiuses[None, :, None])
     all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
