@@ -14,6 +14,7 @@ from time import time
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
+import matplotlib.pyplot as plt
 
 
 
@@ -39,6 +40,20 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     print("VOLUME SHAPE", predicted_volume.shape)
     folder_experiment = "data/dataset/"
     mrc.MRCFile.write(f"{folder_experiment}test.mrc", predicted_volume.detach().cpu().numpy(), Apix=1.0, is_vol=True)
+
+
+    all_coordinates = freqs
+    radiuses = torch.sqrt(torch.sum(all_coordinates**2, dim=-1))
+    alms_per_coordinate = vae.decode(radiuses[None, :, None])
+    print("COORDINSTES", all_coordinates.shape)
+    all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
+    ## I FEED THE RADIUSES DIRECTLY !
+    predicted_image_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radiuses)
+    predicted_image = predicted_volume_flattened.reshape( 190, 190)
+    plt.imshow(predicted_image.detach().cpu().numpy())
+    plt.savefig("data/dataset/image.png")
+    plt.show()
+
 
 if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser()
