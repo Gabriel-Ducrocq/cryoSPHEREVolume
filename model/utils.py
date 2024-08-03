@@ -248,7 +248,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     return res
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-l_max = 20
+l_max = 3
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((128*256*256, 3), dtype=torch.float32)
 start_old = time()
@@ -318,6 +318,12 @@ result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 #print("\n\n")
 #print(torch.abs(result1 - result2))
 
+
+result_e3nn = e3nn.o3.spherical_harmonics(l_max, grid[:, :, [1, 2, 0]], normalize=True)
+wign = e3nn.o3.wigner_D(l_max, alpha, beta, gamma)
+
+print(result_e3nn.shape)
+print(wign)
 
 
 
