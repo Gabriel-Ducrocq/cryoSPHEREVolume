@@ -27,5 +27,5 @@ class Grid(torch.nn.Module):
         mx, my, mz = torch.meshgrid(ax, ax, ax, indexing="xy")
         freqs = torch.stack([mx.flatten(), my.flatten(), mz.flatten()], 1)
         self.register_buffer("freqs_volume", freqs)
-        self.freqs_volume = self.freqs.to(device)
+        self.freqs_volume = self.freqs_volume.to(device)
 
