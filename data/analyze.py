@@ -15,27 +15,6 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 
-class ResSelect(bpdb.Select):
-    def accept_residue(self, res):
-        if res.get_resname() == "LBV":
-            return False
-        else:
-            return True
-
-def concat_and_save(tens, path):
-    """
-    Concatenate the lsit of tensor along the dimension 0
-    :param tens: list of tensor with batch size as dim 0
-    :param path: str, path to save the torch tensor
-    :return: tensor of concatenated tensors
-    """
-    concatenated = torch.concat(tens, dim=0)
-    np.save(path, concatenated.detach().numpy())
-    return concatenated
-
-
-filter_aa = True
-
 
 
 def analyze(yaml_setting_path, model_path, volumes_path):
