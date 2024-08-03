@@ -311,12 +311,12 @@ spher = e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], grid, normalize
 result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 
 
-print("\n\n\n\n")
-print("One", result1)
-print("E3NN", result_e3nn)
-print("Two", result2)
-print("\n\n")
-print(torch.abs(result1 - result2))
+#print("\n\n\n\n")
+#print("One", result1)
+#print("E3NN", result_e3nn)
+#print("Two", result2)
+#print("\n\n")
+#print(torch.abs(result1 - result2))
 
 
 
