@@ -320,7 +320,7 @@ result2 = apply_wigner_D(wigner_matrices, spher[0], l_max)
 
 
 result_e3nn = e3nn.o3.spherical_harmonics(l_max, grid[:, :, [1, 2, 0]], normalize=True)
-wign = e3nn.o3.wigner_D(l_max, alpha, beta, gamma)
+wign = e3nn.o3.wigner_D(l_max, euler_angles[:,2], euler_angles[:,1], euler_angles[:,0])
 
 print(result_e3nn.shape)
 print(wign.shape)
