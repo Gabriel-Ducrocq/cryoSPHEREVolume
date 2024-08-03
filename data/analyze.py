@@ -23,7 +23,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     :param yaml_setting_path: str, path the yaml containing all the details of the experiment
     :return:
     """
-    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, radius_indexes, experiment_settings, device, \
+    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
         scheduler, freqs, l_max = utils.parse_yaml(
         yaml_setting_path)
     vae = torch.load(model_path)
