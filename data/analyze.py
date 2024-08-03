@@ -38,7 +38,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     predicted_volume = predicted_volume_flattened.reshape(190, 190, 190)
     print("VOLUME SHAPE", predicted_volume.shape)
 
-    mrc.MRCFile.write(f"test.mrc", predicted_volume.detach().cpu().numpy(), Apix=1.0, is_vol=True)
+    mrc.MRCFile.write("test.mrc", predicted_volume.detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
 if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser()
