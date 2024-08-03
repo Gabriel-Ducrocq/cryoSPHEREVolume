@@ -2,7 +2,7 @@ import sys
 import os
 path = os.path.abspath("model")
 sys.path.append(path)
-import mrc
+#import mrc
 import yaml
 import torch
 import utils
@@ -10,15 +10,8 @@ import mrcfile
 import argparse
 import starfile
 import numpy as np
-from ctf import CTF
 from time import time
 from tqdm import tqdm
-import Bio.PDB as bpdb
-from Bio.PDB import PDBIO
-from polymer import Polymer
-from Bio.PDB import PDBParser
-from dataset import ImageDataSet
-from gmm import Gaussian, EMAN2Grid
 from torch.utils.data import DataLoader
 from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 
