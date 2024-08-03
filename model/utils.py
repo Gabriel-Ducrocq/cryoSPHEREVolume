@@ -300,7 +300,7 @@ rot_mat = pytorch3d.transforms.random_rotations(1, dtype=torch.float32, device=d
 rotated_grid = torch.einsum("b a q, b r q -> b r a", rot_mat, grid)
 result1 = get_real_spherical_harmonics(rotated_grid, sh, device, l_max)
 
-result_e3nn = e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], rotated_grid[:, [1, 2, 0]], normalize=True)
+result_e3nn = e3nn.o3.spherical_harmonics([i for i in range(l_max+1)], rotated_grid[:, :, [1, 2, 0]], normalize=True)
 
 euler_angles = pytorch3d.transforms.matrix_to_euler_angles(torch.transpose(rot_mat, dim0=-2, dim1=-1), "YXY")
 euler_angles = euler_angles.detach().cpu()
