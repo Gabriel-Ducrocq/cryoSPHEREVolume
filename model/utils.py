@@ -323,7 +323,7 @@ result_e3nn = e3nn.o3.spherical_harmonics(l_max, grid[:, :, [1, 2, 0]], normaliz
 wign = e3nn.o3.wigner_D(l_max, alpha, beta, gamma)
 
 print(result_e3nn.shape)
-print(wign)
+print(wign.shape)
 
 
 
