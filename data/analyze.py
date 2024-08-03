@@ -24,7 +24,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, l_max = model.utils.parse_yaml(
+        scheduler, freqs, l_max = utils.parse_yaml(
         yaml_setting_path)
     vae = torch.load(model_path)
     vae.eval()
