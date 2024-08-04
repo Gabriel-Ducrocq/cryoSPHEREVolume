@@ -43,12 +43,13 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     #The next tensor is ((l_max+1)**2, N_coordinates)
     print(unique_radiuses.shape)
     print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
-    alms_radiuses_volume = torchinterp1d.interp1d(unique_radiuses, torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1), all_radiuses_volumes, out=None)
+    alms_radiuses_volume = torchinterp1d.interp1d(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1), all_radiuses_volumes, out=None)
     alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
     all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
     ## I FEED THE RADIUSES DIRECTLY !
     predicted_volume_hartley_flattened = torch.einsum("b s l, b s l -> b s", alms_radiuses_volume, all_sph)
+    predicted_volume_hartley_flattened[:, all_radiuses_volumes == 0.0] = 0
     predicted_volume_hartley = predicted_volume_hartley_flattened.reshape(190, 190, 190)
     predicted_volume_hartley *= images_std
     predicted_volume_hartley += images_mean
