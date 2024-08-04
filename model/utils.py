@@ -172,6 +172,16 @@ def hartley_to_fourier(image,device,  mu=None, std=None ):
     fourier_transform[:, 0, 0] = low_x[:, 0]
     return fourier_transform
 
+def hartley_to_fourier_3d(volume, device):
+    fourier_volume = torch.view_as_complex(torch.zeros_like(volume, dtype=torch.float32, device=device))
+    volume_cropped = volume[1:, 1:, 1:]
+    volume_cropped_flipped = volume_cropped.flip(dims=(0, 1, 2))
+    fourier_volume[1:, 1:, 1:] = (volume_cropped + volume_cropped_flipped)/2 + 1j*(volume_cropped - volume_cropped_flipped)/2
+    fourier_volume[0, 1:, 1:] = (volume[0, 1:, 1:] + torch.flip(volume[0, 1:, 1:], dims=(0, 1)))/2 + 1j*(volume[0, 1:, 1:] - torch.flip(volume[0, 1:, 1:], dims=(0, 1)))/2
+    fourier_volume[1:, 0, 1:] = (volume[1:, 0, 1:] + torch.flip(volume[1:, 0, 1:], dims=(0, 1))) / 2 + 1j * (volume[1:, 0, 1:] - torch.flip(volume[1:, 0, 1:], dims=(0, 1))) / 2
+    fourier_volume[1:, 1:, 0] = (volume[1:, 1:, 0] + torch.flip(volume[1:, 1:, 0], dims=(0, 1))) / 2 + 1j * (volume[1:, 1:, 0] - torch.flip(volume[1:, 1:, 0], dims=(0, 1))) / 2
+    fourier_volume[0, 0, 0] = volume[0, 0, 0]
+    return volume
 def fourier_to_real(fft_images):
     """
     Compute the inverse fft to recover the image
