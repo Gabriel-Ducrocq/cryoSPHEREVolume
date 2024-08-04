@@ -34,8 +34,8 @@ class VAE(torch.nn.Module):
         :return: torch.tensor(N_batch, N_unique_radiuses, (l_max + 1)**2)
         """
         N_batch = latent_variables.shape[0]
-        #alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax+1)**2)
-        alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax + 1) ** 2)
+        alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax+1)**2)
+        #alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax + 1) ** 2)
         return alms
 
 
