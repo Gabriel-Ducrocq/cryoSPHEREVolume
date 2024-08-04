@@ -167,8 +167,8 @@ def hartley_to_fourier(image,device,  mu=None, std=None ):
     fourier_transform = torch.view_as_complex(torch.zeros((image_square.shape[0], image_square.shape[1], image_square.shape[2], 2), dtype=torch.float32, device=device))
     fourier_transform[:, 1:, 1:] = (image_cropped + image_cropped_flipped)/2 - 1j*(image_cropped - image_cropped_flipped)/2
     ### CHECK THIS PART !!!!!
-    fourier_transform[:, 0, 1:] = (low_x[1:] + torch.flip(low_x[1:], dims=(0, )))/2 + 1j*(low_x[1:] - torch.flip(low_x[1:], dims=(0, )))/2
-    fourier_transform[:, 1:, 0] = (low_y[1:] + torch.flip(low_y[1:], dims=(0, )))/2 + 1j*(low_y[1:] - torch.flip(low_y[1:], dims=(0, )))/2
+    fourier_transform[:, 0, 1:] = (low_x[:, 1:] + torch.flip(low_x[:, 1:], dims=(0, )))/2 + 1j*(low_x[:, 1:] - torch.flip(low_x[:, 1:], dims=(0, )))/2
+    fourier_transform[:, 1:, 0] = (low_y[:, 1:] + torch.flip(low_y[:, 1:], dims=(0, )))/2 + 1j*(low_y[:, 1:] - torch.flip(low_y[:, 1:], dims=(0, )))/2
     fourier_transform[:, 0, 0] = low_x[:, 0]
     return fourier_transform
 
