@@ -43,6 +43,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     #The next tensor is ((l_max+1)**2, N_coordinates)
     print(unique_radiuses.shape)
     print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
+    print(all_radiuses_volumes.shape)
     alms_radiuses_volume = torchinterp1d.interp1d(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1), all_radiuses_volumes, out=None)
     alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
