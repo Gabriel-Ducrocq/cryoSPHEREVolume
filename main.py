@@ -47,8 +47,8 @@ def train(yaml_setting_path, debug_mode):
     ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
-        images_std = torch.std(images_for_std, dim=0, keepdim=True).to(device)
-        images_mean = torch.mean(images_for_std, dim=0, keepdim=True).to(device)
+        images_std = torch.std(images_for_std).to(device)
+        images_mean = torch.mean(images_for_std).to(device)
         break
 
     for epoch in range(N_epochs):
@@ -65,8 +65,6 @@ def train(yaml_setting_path, debug_mode):
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
             non_standardized = batch_images.flatten(start_dim=1, end_dim=2)
-            print("MOMENTS", images_mean.shape)
-            print("MOMENTS", images_std.shape)
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
