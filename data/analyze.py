@@ -41,6 +41,8 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
     alms_per_radius = vae.decode(torch.zeros((1, 8), dtype=torch.float32, device=device))
     #The next tensor is ((l_max+1)**2, N_coordinates)
+    print(unique_radiuses.shape)
+    print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
     alms_radiuses_volume = torchinterp1d.interp1d(unique_radiuses, torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1), all_radiuses_volumes, out=None)
     alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
