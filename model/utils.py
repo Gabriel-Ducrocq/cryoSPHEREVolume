@@ -272,7 +272,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
         print("INSIDE")
         print(wigner_matrices[l].shape)
         print(spherical_harmonics[l].shape)
-        r = torch.einsum("b l e , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
+        r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
         start += 2*l+1
         res.append(r)
 
@@ -295,6 +295,9 @@ all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
 rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates)
+print("RITATED COORD")
+print(rotated_coords)
+print(R[0] @ coordinates[0])
 print("SHAPE")
 print(rotated_coords.shape)
 matrix_rotated = get_real_spherical_harmonics_e3nn(rotated_coords[0, :, :], l_max)
