@@ -41,18 +41,17 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
     alms_per_radius = vae.decode(torch.zeros((1, 8), dtype=torch.float32, device=device))
     #The next tensor is ((l_max+1)**2, N_coordinates)
-    print(unique_radiuses.shape)
-    print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
-    print(all_radiuses_volumes.shape)
     ## I transposed the alm per radius: it is of shape (N_unique_radiuses, (l_max+1)**2)
+    alms_radiuses_volume = []
     for l in range((l_max+1)**2):
         linearInterpolator = interp.Interp1D(unique_radiuses, alms_per_radius[0, :, l],
-                                             method="linear")
-        alms_radiuses_volume = linearInterpolator(all_radiuses_volumes)
+                                             method="linear", extrap=None)
+        alms_radiuses_volume_l = linearInterpolator(all_radiuses_volumes)
         print("Interpolation probleö number:", l)
-        print(alms_radiuses_volume.shape)
+        print(alms_radiuses_volume_l.shape)
+        alms_radiuses_volume.append(alms_radiuses_volume_l)
 
-    alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
+    alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
     all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
     ## I FEED THE RADIUSES DIRECTLY !
