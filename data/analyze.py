@@ -45,7 +45,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     alms_radiuses_volume = []
     for l in range((l_max+1)**2):
         linearInterpolator = interp.Interp1D(unique_radiuses, alms_per_radius[0, :, l],
-                                             method="linear", extrap=None)
+                                             method="linear", extrap=0.0)
         alms_radiuses_volume_l = linearInterpolator(all_radiuses_volumes)
         print("Interpolation probleö number:", l)
         print(alms_radiuses_volume_l.shape)
@@ -60,6 +60,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     predicted_volume_hartley = predicted_volume_hartley_flattened.reshape(190, 190, 190)
     predicted_volume_hartley *= images_std
     predicted_volume_hartley += images_mean
+    print("Hartley shape", predicted_volume_hartley.shape)
     predicted_volume_fourier = utils.hartley_to_fourier_3d(predicted_volume_hartley, device)
     predicted_volume_real = torch.fft.fttn(predicted_volume_fourier).real
 

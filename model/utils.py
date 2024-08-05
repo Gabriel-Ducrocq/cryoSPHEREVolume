@@ -173,7 +173,7 @@ def hartley_to_fourier(image,device,  mu=None, std=None ):
     return fourier_transform
 
 def hartley_to_fourier_3d(volume, device):
-    fourier_volume = torch.view_as_complex(torch.zeros_like(volume, dtype=torch.float32, device=device))
+    fourier_volume = torch.view_as_complex(torch.zeros((volume.shape[0], volume.shape[1], volume.shape[2], 2), dtype=torch.float32, device=device))
     volume_cropped = volume[1:, 1:, 1:]
     volume_cropped_flipped = volume_cropped.flip(dims=(0, 1, 2))
     fourier_volume[1:, 1:, 1:] = (volume_cropped + volume_cropped_flipped)/2 + 1j*(volume_cropped - volume_cropped_flipped)/2
