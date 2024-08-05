@@ -287,9 +287,9 @@ coordinates = torch.randn((1, 3), dtype=torch.float32)
 coordinates_non_permutted = coordinates
 coordinates = coordinates[:, [1, 2, 0]]
 start_old = time()
-spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates_non_permutted, l_max)
+spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-print("SPHERE SPHERICARt", sh.compute(coordinates.detach().cpu().numpy()))
+print("SPHERE SPHERICARt", sh.compute(coordinates_non_permutted.detach().cpu().numpy()))
 print("SPHERE E3NN",spherical_harmonics)
 #print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
 #end_old = time()
