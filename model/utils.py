@@ -119,7 +119,8 @@ def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
     :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
     """
-    coordinates = coordinates[:, [1, 2, 0]]
+    #### BE CAREFUL, REMOVING THE EXCHANGE OF COORDINATES !!!!!!!!
+    #coordinates = coordinates[:, [1, 2, 0]]
     all_sh_values = []
     for l in range(l_max+1):
         all_sh_values.append(e3nn.o3.spherical_harmonics(l=l, x=coordinates, normalize=True))
@@ -289,15 +290,12 @@ spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
 #end_old = time()
 #print("Old version", end_old - start_old)
 #start_old = time()
-R,Res = torch.linalg.qr(torch.rand(1, 3,3))
+R,Res = torch.linalg.qr(torch.rand(1, 3, 3))
 alpha, beta, gamma = e3nn.o3.matrix_to_angles(R)
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
 rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates)
-print("RITATED COORD")
-print(rotated_coords)
-print(R[0] @ coordinates[0])
 print("SHAPE")
 print(rotated_coords.shape)
 matrix_rotated = get_real_spherical_harmonics_e3nn(rotated_coords[0, :, :], l_max)
