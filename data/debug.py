@@ -16,6 +16,7 @@ Yx = torch.tensor([
     K1 * x*z/r2,
     K1 * 0.5 * (x**2 - y**2)/r2]
     )
+Yx = e3nn.o3.spherical_harmonics(l=2, x=x1, normalize=True)
 
 # Random unitary matrix
 R,Res = torch.linalg.qr(torch.rand(3,3))
@@ -32,6 +33,7 @@ YRx = torch.tensor([
     K1 * x*z/r2,
     K1 * 0.5 *(x**2 - y**2)/r2
     ])
+YRx = e3nn.o3.spherical_harmonics(l=2, x=Rx1, normalize=True)
 
 # Generate Wigner D matrix (This and e3nn.o3.wigner_D gives same results)
 ir = e3nn.o3.Irreps("1x2e")
@@ -41,4 +43,4 @@ D = e3nn.o3.wigner_D(2, euler_angles[0], euler_angles[1], euler_angles[2])
 # ∑𝑚′𝐷(𝑙)𝑚𝑚′(𝑔)𝑌(𝑙)𝑚′(𝑟̂ )
 DYx = D @ Yx
 
-print(DYx - YRx)
+print(torch.abs((DYx - YRx)/DYx))
