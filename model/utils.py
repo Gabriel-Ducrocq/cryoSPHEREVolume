@@ -120,8 +120,11 @@ def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
     """
     coordinates = coordinates[:, [1, 2, 0]]
-    sh_values = e3nn.o3.spherical_harmonics(l=[l for l in range(l_max+1)], x=coordinates, normalize=True)
-    return sh_values
+    all_sh_values = []
+    for l in range(l_max+1):
+        all_sh_values.append(e3nn.o3.spherical_harmonics(l=l, x=coordinates, normalize=True))
+
+    return all_sh_values
 
 
 def alm_from_radius_to_coordinate(alm, radiuses_index):
@@ -268,8 +271,8 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
         start = 0
         print("INSIDE")
         print(wigner_matrices[l].shape)
-        print(spherical_harmonics[:, start:start + (2 * l + 1)].shape)
-        r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[:, start:start + (2 * l + 1)])
+        print(spherical_harmonics[l].shape)
+        r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
         start += 2*l+1
         res.append(r)
 
