@@ -104,7 +104,7 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
                         and N_side_freq**2 if image reconstruction
     :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
-    :return: torch.tensor(N_batch, N_freqs)
+    :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
     """
     batch_size = coordinates.shape[0]
     coordinates = coordinates.reshape(-1, 3)
@@ -117,7 +117,7 @@ def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
                         and N_side_freq**2 if image reconstruction
     :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
-    :return: torch.tensor(N_batch, N_freqs)
+    :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
     """
     coordinates = coordinates[:, :, [1, 2, 0]]
     sh_values = e3nn.o3.spherical_harmonics(l=[l for l in range(l_max+1)], x=coordinates, normalize=True)
@@ -276,21 +276,26 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 l_max = 3
-sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-coordinates = torch.randn((128*256*256, 3), dtype=torch.float32)
+#sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
+coordinates = torch.randn((256*256, 3), dtype=torch.float32)
 start_old = time()
 spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates[None, :,:], l_max)
-print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
-end_old = time()
-print("Old version", end_old - start_old)
-start_old = time()
-spherical_harmonics = get_real_spherical_harmonics(coordinates, sh, device, l_max)
-end_old = time()
-print("Old version", end_old - start_old)
-alpha = torch.randn((128,))*torch.pi
-beta = torch.randn((128,))*torch.pi
-gamma = torch.randn((128,))*torch.pi
-spherical_har_wigner_coord = torch.randn((256*256, 3), dtype=torch.float32)
+#print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
+#end_old = time()
+#print("Old version", end_old - start_old)
+#start_old = time()
+R,Res = torch.linalg.qr(torch.rand(1, 3,3))
+euler_angles = e3nn.o3.matrix_to_angles(R)
+all_wigner = compute_wigner_D([l for l in range(l_max+1)], euler_angles[:, 0], euler_angles[:, 1], euler_angles[:, 2])
+wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
+
+rotated_coords = torch.einsum("b q r, l r-> b q l", R, coordinates)
+matrix_rotated  = get_real_spherical_harmonics_e3nn(rotated_coords, l_max)
+
+print(wigner_rotated)
+print("\n\n")
+print(matrix_rotated)
+"""
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
 start_computing = time()
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
@@ -358,7 +363,7 @@ print(e3nn.o3.spherical_harmonics(l_max, rotated_grid[:, :, [1, 2, 0]], normaliz
 
 print(euler_angles)
 print(e3nn.o3.matrix_to_angles(rot_mat))
-
+"""
 
 
 
