@@ -291,7 +291,7 @@ alpha, beta, gamma = e3nn.o3.matrix_to_angles(R)
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
-rotated_coords = torch.einsum("b q r, l r-> b q l", R, coordinates)
+rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates)
 print("SHAPE")
 print(rotated_coords.shape)
 matrix_rotated = get_real_spherical_harmonics_e3nn(rotated_coords[0, :, :], l_max)
