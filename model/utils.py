@@ -294,7 +294,8 @@ print("SPHERE E3NN",spherical_harmonics)
 #print("Old version", end_old - start_old)
 #start_old = time()
 R,Res = torch.linalg.qr(torch.rand(1, 3, 3))
-R_permutted = R[:, [1, 2, 0]]
+print("R shape", R.shape)
+R_permutted = R[:, :, [1, 2, 0]]
 alpha, beta, gamma = e3nn.o3.matrix_to_angles(R_permutted)
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
