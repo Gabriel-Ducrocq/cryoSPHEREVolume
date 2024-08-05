@@ -281,7 +281,7 @@ l_max = 3
 #sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((256*256, 3), dtype=torch.float32)
 start_old = time()
-spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates[None, :,:], l_max)
+spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
 #print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
 #end_old = time()
 #print("Old version", end_old - start_old)
