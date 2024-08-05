@@ -111,6 +111,18 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device).reshape(batch_size, -1, (l_max+1)**2)
     return sh_values
 
+def get_real_spherical_harmonics_e3nn(coordinates, l_max):
+    """
+    Computes the real, cartesian spherical harmonics functions.
+    :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
+                        and N_side_freq**2 if image reconstruction
+    :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
+    :return: torch.tensor(N_batch, N_freqs)
+    """
+    coordinates = coordinates[:, :, [1, 2, 0]]
+    sh_values = e3nn.o3.spherical_harmonics(l=[l for l in range(l_max+1)], x=coordinates, normalize=True)
+    return sh_values
+
 
 def alm_from_radius_to_coordinate(alm, radiuses_index):
     """
@@ -267,7 +279,8 @@ l_max = 3
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((128*256*256, 3), dtype=torch.float32)
 start_old = time()
-spherical_harmonics = get_real_spherical_harmonics(coordinates, sh, device, l_max)
+spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
+print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
 end_old = time()
 print("Old version", end_old - start_old)
 start_old = time()
