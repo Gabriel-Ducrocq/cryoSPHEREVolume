@@ -62,7 +62,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     predicted_volume_hartley += images_mean
     print("Hartley shape", predicted_volume_hartley.shape)
     predicted_volume_fourier = utils.hartley_to_fourier_3d(predicted_volume_hartley, device)
-    predicted_volume_real = torch.fft.fttn(predicted_volume_fourier).real
+    predicted_volume_real = torch.fft.fftn(predicted_volume_fourier).real
 
     print("VOLUME SHAPE", predicted_volume_real.shape)
     folder_experiment = "data/dataset/"
