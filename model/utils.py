@@ -284,9 +284,10 @@ device = "cpu"
 l_max = 3
 #sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((1, 3), dtype=torch.float32)
+coordinates_non_permutted = coordinates
 coordinates = coordinates[:, [1, 2, 0]]
 start_old = time()
-spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
+spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates_non_permutted, l_max)
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 print("SPHERE SPHERICARt", sh.compute(coordinates.detach().cpu().numpy()))
 print("SPHERE E3NN",spherical_harmonics)
