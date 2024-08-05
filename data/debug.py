@@ -2,7 +2,7 @@ import torch
 import e3nn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-x1 = torch.randn(3, dtype=torch.float32, device = device)
+x1 = torch.randn(3, dtype=torch.float32)
 
 # Generate Real Spherical Harmonics L=2
 K1 = 0.5 * torch.sqrt(torch.tensor(15./torch.pi))
