@@ -12,7 +12,7 @@ import starfile
 import numpy as np
 from time import time
 from tqdm import tqdm
-import xitorch
+import xitorch.interpolate as interp
 from torch.utils.data import DataLoader
 from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 import matplotlib.pyplot as plt
@@ -45,7 +45,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
     print(all_radiuses_volumes.shape)
     ## I transposed the alm per radius: it is of shape ((l_max+1)**2, N_unique_radiuses)
-    linearInterpolator = xitorch.interpolate.Interp1D(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1),
+    linearInterpolator = interp.Interp1D(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1),
                                  method="linear")
     alms_radiuses_volume = linearInterpolator(all_radiuses_volumes[None, :])
     alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
