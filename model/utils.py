@@ -120,7 +120,8 @@ def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
     """
     #### BE CAREFUL, REMOVING THE EXCHANGE OF COORDINATES !!!!!!!!
-    coordinates = coordinates[:, [1, 2, 0]]
+    #coordinates = coordinates[:, [1, 2, 0]]
+    coordinates = coordinates[:, [2, 0, 1]]
     all_sh_values = []
     for l in range(l_max+1):
         all_sh_values.append(e3nn.o3.spherical_harmonics(l=l, x=coordinates, normalize=True))
