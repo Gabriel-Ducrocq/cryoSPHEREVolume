@@ -66,7 +66,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
 
     print("VOLUME SHAPE", predicted_volume_real.shape)
     folder_experiment = "data/dataset/"
-    mrc.MRCFile.write(f"{folder_experiment}test.mrc", predicted_volume_real.detach().cpu().numpy(), Apix=1.0, is_vol=True)
+    mrc.MRCFile.write(f"{folder_experiment}volume.mrc", predicted_volume_real.detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
 
     all_coordinates = freqs
