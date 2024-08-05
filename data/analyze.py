@@ -12,7 +12,7 @@ import starfile
 import numpy as np
 from time import time
 from tqdm import tqdm
-import torchinterp1d
+import xitorch
 from torch.utils.data import DataLoader
 from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 import matplotlib.pyplot as plt
@@ -44,7 +44,10 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     print(unique_radiuses.shape)
     print(torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1).shape)
     print(all_radiuses_volumes.shape)
-    alms_radiuses_volume = torchinterp1d.interp1d(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1), all_radiuses_volumes[None, :], out=None)
+    ## I transposed the alm per radius: it is of shape ((l_max+1)**2, N_unique_radiuses)
+    linearInterpolator = xitorch.interpolate.Interp1D(unique_radiuses[None, :], torch.transpose(alms_per_radius[0, :, :], dim0=0, dim1=1),
+                                 method="linear")
+    alms_radiuses_volume = linearInterpolator(all_radiuses_volumes[None, :])
     alms_radiuses_volume = torch.transpose(alms_radiuses_volume, dim0=0, dim1=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
     all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
