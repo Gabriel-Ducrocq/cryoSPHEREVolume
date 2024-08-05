@@ -121,7 +121,6 @@ def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     """
     #### BE CAREFUL, REMOVING THE EXCHANGE OF COORDINATES !!!!!!!!
     #coordinates = coordinates[:, [1, 2, 0]]
-    coordinates = coordinates[:, [2, 0, 1]]
     all_sh_values = []
     for l in range(l_max+1):
         all_sh_values.append(e3nn.o3.spherical_harmonics(l=l, x=coordinates, normalize=True))
@@ -285,6 +284,7 @@ device = "cpu"
 l_max = 3
 #sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((1, 3), dtype=torch.float32)
+coordinates = coordinates[:, [1, 2, 0]]
 start_old = time()
 spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
