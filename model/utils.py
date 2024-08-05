@@ -272,7 +272,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
         print("INSIDE")
         print(wigner_matrices[l].shape)
         print(spherical_harmonics[l].shape)
-        r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
+        r = torch.einsum("b l e , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
         start += 2*l+1
         res.append(r)
 
