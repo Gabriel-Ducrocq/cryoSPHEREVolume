@@ -275,6 +275,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     return res
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cpu"
 l_max = 3
 #sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 coordinates = torch.randn((256*256, 3), dtype=torch.float32)
