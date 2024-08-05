@@ -286,6 +286,9 @@ spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates[None, :,:], 
 #start_old = time()
 R,Res = torch.linalg.qr(torch.rand(1, 3,3))
 euler_angles = e3nn.o3.matrix_to_angles(R)
+print("euler angles")
+print(euler_angles.shape)
+print(euler_angles[:, 0])
 all_wigner = compute_wigner_D([l for l in range(l_max+1)], euler_angles[:, 0], euler_angles[:, 1], euler_angles[:, 2])
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
