@@ -296,6 +296,13 @@ print("SPHERE E3NN",spherical_harmonics)
 R,Res = torch.linalg.qr(torch.rand(1, 3, 3))
 print("R shape", R.shape)
 R_permutted = R[:, :, [1, 2, 0]]
+### We place ourselves in the convention (x, y, z), with a coordinate v and rotation matrix R
+### To get the real spherical harmonics, we need the convention (y, z, x) to feed into e3nn
+## We can permute v to get v_prime = Uv where U is a permutation matrix
+## But a rotation of v by R is not a rotation of v_prime by R. Instead, we need to express R in the (y, z, x) convention
+## To rotate v_prime, we can send it to (x, y, z), rotate it and then send it back to (y, z, x).
+## Which means v_prime = U^T R U v. So the rotation matrix in (y, z, x) is R_prime = U^T R U. This is what we can feed to
+## e3nn to recover the correct Wigner matrix.
 alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
 all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
