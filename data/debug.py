@@ -19,6 +19,7 @@ Yx = torch.tensor([
 
 # Random unitary matrix
 R,Res = torch.linalg.qr(torch.rand(3,3))
+euler_angles = e3nn.o3.matrix_to_angles(R)
 
 # Rotated coordinates SH
 Rx1 = R @ x1
@@ -35,6 +36,7 @@ YRx = torch.tensor([
 # Generate Wigner D matrix (This and e3nn.o3.wigner_D gives same results)
 ir = e3nn.o3.Irreps("1x2e")
 D = ir.D_from_matrix(R)
+D = e3nn.o3.wigner_D(2, euler_angles[0], euler_angles[1], euler_angles[2])
 
 # ∑𝑚′𝐷(𝑙)𝑚𝑚′(𝑔)𝑌(𝑙)𝑚′(𝑟̂ )
 DYx = D @ Yx
