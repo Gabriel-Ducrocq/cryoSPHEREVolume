@@ -262,10 +262,13 @@ def compute_wigner_D(l_max, R, device):
     alpha = alpha.detach().cpu()
     beta = beta.detach().cpu()
     gamma = gamma.detach().cpu()
+    start = time()
     for l in range(l_max+1):
         r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
         r.append(r_inter.to(device))
 
+    end = time()
+    print("Inside Wigner time", end - start)
     return r
 
 def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
