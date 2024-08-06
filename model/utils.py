@@ -250,7 +250,7 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
 def convert_spher_cartesian(lat, long, r):
     return np.array((r*np.sin(lat)*np.cos(long), r*np.sin(lat)*np.sin(long), r*np.cos(lat)))[None, :]
 
-def compute_wigner_D(l_max, R):
+def compute_wigner_D(l_max, R, device):
     """
 
     :param l_max: int, l_max for the spherical harmonics
@@ -278,16 +278,17 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     """
     res = []
     for l in range(l_max+1):
-        start = 0
         print("INSIDE")
         print(wigner_matrices[l].shape)
         print(spherical_harmonics[l].shape)
         r = torch.einsum("b e l , s l-> b s e", wigner_matrices[l], spherical_harmonics[l])
-        start += 2*l+1
         res.append(r)
 
+    res = torch.cat(res, dim=-1)
     return res
 
+
+"""
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cpu"
 l_max = 3
@@ -332,6 +333,8 @@ print(matrix_rotated)
 result_sphericart = get_real_spherical_harmonics(rotated_coords, sh, device, l_max)
 print("\n\n")
 print(result_sphericart)
+"""
+
 """
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
 start_computing = time()
