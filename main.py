@@ -79,6 +79,7 @@ def train(yaml_setting_path, debug_mode):
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
             e3nn_rotated_spherical_harmonics = utils.get_real_spherical_harmonics_e3nn(all_coordinates[0], l_max)
             print("Comparison of the two methods")
+            print(e3nn_rotated_spherical_harmonics.shape)
             print("Wigner", rotated_spherical_harmonics[0][0])
             print("Rotated by hand", e3nn_rotated_spherical_harmonics[0])
             exit()
