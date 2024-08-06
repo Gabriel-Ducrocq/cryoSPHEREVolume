@@ -86,6 +86,7 @@ def train(yaml_setting_path, debug_mode):
             e3nn_rotated_spherical_harmonics = torch.cat(e3nn_rotated_spherical_harmonics, dim=-1)
             print("Comparison of the two methods")
             print(e3nn_rotated_spherical_harmonics.shape)
+            print("Wigner first", e3nn_rotated_spherical_harmonics[1])
             print("Wigner", rotated_spherical_harmonics[0][0])
             print("Rotated by hand", e3nn_rotated_spherical_harmonics[0])
             print("sphericart", sphericart_coord)
