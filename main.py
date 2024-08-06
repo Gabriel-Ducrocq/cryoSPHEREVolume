@@ -57,6 +57,10 @@ def train(yaml_setting_path, debug_mode):
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
         data_loader = tqdm(
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
+
+        #Batch size of 1 !!!!!!
+        data_loader = tqdm(
+            iter(DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
