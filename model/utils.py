@@ -316,6 +316,9 @@ matrix_rotated = get_real_spherical_harmonics_e3nn(rotated_coords[0, :, [1, 2, 0
 print(wigner_rotated)
 print("\n\n")
 print(matrix_rotated)
+result_sphericart = get_real_spherical_harmonics(rotated_coords, sh, device, l_max)
+print("\n\n")
+print(result_sphericart)
 """
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
 start_computing = time()
