@@ -288,7 +288,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     return res
 
 
-"""
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cpu"
 l_max = 3
@@ -318,7 +318,7 @@ start = time()
 alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
 end = time()
 print(end -start)
-all_wigner = compute_wigner_D(l_max, R)
+all_wigner = compute_wigner_D(l_max, R, device)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
 #rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates[:, [1, 2, 0]])
@@ -333,7 +333,7 @@ print(matrix_rotated)
 result_sphericart = get_real_spherical_harmonics(rotated_coords, sh, device, l_max)
 print("\n\n")
 print(result_sphericart)
-"""
+
 
 """
 sh_values_new = torch.as_tensor(sh.compute(spherical_har_wigner_coord.detach().cpu().numpy()), dtype=torch.float32, device=device)
