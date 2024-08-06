@@ -58,9 +58,6 @@ def train(yaml_setting_path, debug_mode):
         data_loader = tqdm(
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
-        #Batch size of 1 !!!!!!
-        data_loader = tqdm(
-            iter(DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4, drop_last=True)))
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
@@ -83,7 +80,7 @@ def train(yaml_setting_path, debug_mode):
             end_wigner = time()
             start_apply = time()
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-            end_apply = ()
+            end_apply = time()
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, radius_indexes)
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
