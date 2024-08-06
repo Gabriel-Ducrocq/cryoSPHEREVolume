@@ -78,6 +78,7 @@ def train(yaml_setting_path, debug_mode):
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
             e3nn_rotated_spherical_harmonics = utils.get_real_spherical_harmonics_e3nn(all_coordinates[0], l_max)
+            e3nn_rotated_spherical_harmonics = torch.cat(e3nn_rotated_spherical_harmonics, dim=-1)
             print("Comparison of the two methods")
             print(e3nn_rotated_spherical_harmonics.shape)
             print("Wigner", rotated_spherical_harmonics[0][0])
