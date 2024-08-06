@@ -290,10 +290,9 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     return res
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cpu"
 l_max = 3
 #sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-coordinates = torch.randn((1, 3), dtype=torch.float32)
+coordinates = torch.randn((1, 3), dtype=torch.float32, device=device)
 start_old = time()
 spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates[:, [1, 2, 0]], l_max)
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
@@ -303,7 +302,7 @@ print("SPHERE E3NN",spherical_harmonics)
 #end_old = time()
 #print("Old version", end_old - start_old)
 #start_old = time()
-R,Res = torch.linalg.qr(torch.rand(1, 3, 3))
+R,Res = torch.linalg.qr(torch.rand(1, 3, 3, device=device))
 print("R shape", R.shape)
 R_permutted = R[:, :, [1, 2, 0]]
 ### We place ourselves in the convention (x, y, z), with a coordinate v and rotation matrix R
