@@ -90,10 +90,9 @@ def train(yaml_setting_path, debug_mode):
             e3nn_rotated_spherical_harmonics = torch.cat(e3nn_rotated_spherical_harmonics, dim=-1)
             print("Comparison of the two methods")
             print(e3nn_rotated_spherical_harmonics.shape)
-            print("Wigner first", e3nn_rotated_spherical_harmonics[1])
-            print("Wigner", rotated_spherical_harmonics[0][0])
-            print("Rotated by hand", e3nn_rotated_spherical_harmonics[0])
-            print("sphericart", sphericart_coord)
+            print("Wigner", rotated_spherical_harmonics[0][2])
+            print("Rotated by hand", e3nn_rotated_spherical_harmonics[2])
+            print("sphericart", sphericart_coord[2])
             exit()
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radius_indexes)
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
