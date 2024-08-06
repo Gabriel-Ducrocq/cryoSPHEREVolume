@@ -309,8 +309,12 @@ R_permutted = R[:, :, [1, 2, 0]]
 ## To rotate v_prime, we can send it to (x, y, z), rotate it and then send it back to (y, z, x).
 ## Which means v_prime = U^T R U v. So the rotation matrix in (y, z, x) is R_prime = U^T R U. This is what we can feed to
 ## e3nn to recover the correct Wigner matrix.
+print("Timing matrix to euler angles:")
+start = time()
 alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
-all_wigner = compute_wigner_D(l_max, alpha, beta, gamma)
+end = time()
+print(end -start)
+all_wigner = compute_wigner_D(l_max, R)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
 #rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates[:, [1, 2, 0]])
