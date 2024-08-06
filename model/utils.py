@@ -92,7 +92,7 @@ def parse_yaml(path):
     N_epochs = experiment_settings["N_epochs"]
     batch_size = experiment_settings["batch_size"]
     sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-    spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs[:, [1, 2, 0]], l_max)
+    spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs, l_max)
 
 
 
