@@ -80,8 +80,8 @@ def train(yaml_setting_path, debug_mode):
             e3nn_rotated_spherical_harmonics = utils.get_real_spherical_harmonics_e3nn(all_coordinates, l_max)
             print("Comparison of the two methods")
             print("Wigner", rotated_spherical_harmonics[0])
-            print("\n\n")
             print("Rotated by hand", e3nn_rotated_spherical_harmonics[0])
+            exit()
             all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radius_indexes)
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
