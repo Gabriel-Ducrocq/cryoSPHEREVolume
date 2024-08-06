@@ -297,15 +297,11 @@ coordinates = torch.randn((1, 3), dtype=torch.float32)
 start_old = time()
 spherical_harmonics = get_real_spherical_harmonics_e3nn(coordinates, l_max)
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-print("SPHERE SPHERICARt", sh.compute(coordinates.detach().cpu().numpy()))
-print("SPHERE E3NN",spherical_harmonics)
 #print("SPHERICAL HARMONICS E3NN SHAPE", spherical_harmonics.shape)
 #end_old = time()
 #print("Old version", end_old - start_old)
 #start_old = time()
 R,Res = torch.linalg.qr(torch.rand(1, 3, 3))
-print("R shape", R.shape)
-R_permutted = R[:, :, [1, 2, 0]]
 ### We place ourselves in the convention (x, y, z), with a coordinate v and rotation matrix R
 ### To get the real spherical harmonics, we need the convention (y, z, x) to feed into e3nn
 ## We can permute v to get v_prime = Uv where U is a permutation matrix
@@ -313,18 +309,11 @@ R_permutted = R[:, :, [1, 2, 0]]
 ## To rotate v_prime, we can send it to (x, y, z), rotate it and then send it back to (y, z, x).
 ## Which means v_prime = U^T R U v. So the rotation matrix in (y, z, x) is R_prime = U^T R U. This is what we can feed to
 ## e3nn to recover the correct Wigner matrix.
-print("Timing matrix to euler angles:")
-start = time()
-alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
-end = time()
-print(end -start)
 all_wigner = compute_wigner_D(l_max, R, device)
 wigner_rotated = apply_wigner_D(all_wigner, spherical_harmonics, l_max=l_max)
 
 #rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates[:, [1, 2, 0]])
 rotated_coords = torch.einsum("b q r, l r-> b l q", R, coordinates)
-print("SHAPE")
-print(rotated_coords.shape)
 matrix_rotated = get_real_spherical_harmonics_e3nn(rotated_coords[0, :, :], l_max)
 
 print(wigner_rotated)
