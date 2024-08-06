@@ -80,7 +80,7 @@ def train(yaml_setting_path, debug_mode):
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
             print("rot ", all_coordinates.shape)
             e3nn_rotated_spherical_harmonics = utils.get_real_spherical_harmonics_e3nn(all_coordinates[0], l_max)
-            sphericart_coord = sphericartObj.compute(all_coordinates[0])
+            sphericart_coord = sphericartObj.compute(all_coordinates[0].detach().cpu())
             print(e3nn_rotated_spherical_harmonics[2].shape)
             print(all_wigner[2].shape)
             e3nn_rotated_spherical_harmonics = torch.cat(e3nn_rotated_spherical_harmonics, dim=-1)
