@@ -29,8 +29,6 @@ class ImageDataSet(Dataset):
         euler_angles_degrees = particles_df[["rlnAngleRot", "rlnAngleTilt", "rlnAnglePsi"]].values
         euler_angles_radians = euler_angles_degrees*np.pi/180
         poses = euler_angles_to_matrix(torch.tensor(euler_angles_radians, dtype=torch.float32), convention="ZYZ")
-        #Transposing because ReLion has a clockwise convention, while we use a counter-clockwise convention.
-        poses = torch.transpose(poses, dim0=-2, dim1=-1)
 
         #Reading the translations. ReLion may express the translations divided by apix. So we need to multiply by apix to recover them in Å
         if "rlnOriginXAngst" in particles_df:

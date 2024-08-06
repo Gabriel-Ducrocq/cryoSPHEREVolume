@@ -24,7 +24,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -74,7 +74,14 @@ def train(yaml_setting_path, debug_mode):
             alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
+            all_wigner = utils.compute_wigner_D(l_max, batch_poses)
+            rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
             all_coordinates = model.grid.rotate_grid(batch_poses, freqs)
+            e3nn_rotated_spherical_harmonics = utils.get_real_spherical_harmonics_e3nn(all_coordinates, l_max)
+            print("Comparison of the two methods")
+            print("Wigner", rotated_spherical_harmonics[0])
+            print("\n\n")
+            print("Rotated by hand", e3nn_rotated_spherical_harmonics[0])
             all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radius_indexes)
             nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,

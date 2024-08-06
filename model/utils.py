@@ -92,11 +92,12 @@ def parse_yaml(path):
     N_epochs = experiment_settings["N_epochs"]
     batch_size = experiment_settings["batch_size"]
     sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
+    spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs[:, [1, 2, 0]], l_max)
 
 
 
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
@@ -249,12 +250,17 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
 def convert_spher_cartesian(lat, long, r):
     return np.array((r*np.sin(lat)*np.cos(long), r*np.sin(lat)*np.sin(long), r*np.cos(lat)))[None, :]
 
+def compute_wigner_D(l_max, R):
+    """
 
-def compute_wigner_D(l_max, alpha, beta, gamma):
+    :param l_max: int, l_max for the spherical harmonics
+    :param R: torch.tensor(N_batch, 3, 3)
+    :return:
+    """
     r = []
+    alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
     for l in range(l_max+1):
         r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
-        print("TEST", r_inter.shape)
         r.append(r_inter.to(device))
 
     return r
