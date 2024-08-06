@@ -8,7 +8,7 @@ def rotate_grid(rotation_matrices, grid):
     :param grid: torch.tensor(side_shape**2, 3) of frequencies.
     :return: torch.tensor(N_batch, side_shape**2, 3) of rotated frequencies
     """
-    return torch.einsum("s q, b q k -> b s k", grid, rotation_matrices)
+    return torch.einsum("b k q, s q -> b s k", rotation_matrices, grid)
 class Grid(torch.nn.Module):
     """
     Class describing the ctf, built from starfile
