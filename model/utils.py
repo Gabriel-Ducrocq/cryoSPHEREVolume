@@ -258,7 +258,10 @@ def compute_wigner_D(l_max, R):
     :return:
     """
     r = []
-    alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]]).detach().cpu()
+    alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
+    alpha = alpha.detach().cpu()
+    beta = beta.detach().cpu()
+    gamma = gamma.detach().cpu()
     for l in range(l_max+1):
         r_inter = e3nn.o3.wigner_D(l, alpha, beta, gamma)
         r.append(r_inter.to(device))
