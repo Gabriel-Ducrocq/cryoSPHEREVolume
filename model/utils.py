@@ -102,7 +102,7 @@ def parse_yaml(path):
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator
 
-def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
+def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
     Computes the real, cartesian spherical harmonics functions.
     :param coordinates: torch.tensor(N_freqs, 3)
@@ -110,7 +110,14 @@ def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     :return: torch.tensor(N_freqs, (l_max+1)**2)
     """
     sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device)
-    return sh_values
+    splitted_sh_values = []
+    start = 0
+    for l in range(l_max + 1):
+        end = start + 2*l+1
+        splitted_sh_values.append(sh_values[...,start:end])
+        start = end
+
+    return splitted_sh_values
 
 def get_real_spherical_harmonics_e3nn(coordinates, l_max):
     """
@@ -201,6 +208,7 @@ def hartley_to_fourier_3d(volume, device):
     fourier_volume[1:, 1:, 0] = (volume[1:, 1:, 0] + torch.flip(volume[1:, 1:, 0], dims=(0, 1))) / 2 + 1j * (volume[1:, 1:, 0] - torch.flip(volume[1:, 1:, 0], dims=(0, 1))) / 2
     fourier_volume[0, 0, 0] = volume[0, 0, 0]
     return volume
+
 def fourier_to_real(fft_images):
     """
     Compute the inverse fft to recover the image
