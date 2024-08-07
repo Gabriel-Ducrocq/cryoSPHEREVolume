@@ -120,7 +120,7 @@ class WignerD():
         start = time()
         for l in range(l_max+1):
             r_inter = self.wigner_D(l, alpha, beta, gamma)
-            r.append(r_inter.to(device))
+            r.append(r_inter)
 
         end = time()
         print("Inside Wigner time", end - start)
