@@ -93,7 +93,8 @@ def parse_yaml(path):
     N_epochs = experiment_settings["N_epochs"]
     batch_size = experiment_settings["batch_size"]
     sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-    spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs, l_max)
+    #spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs, l_max)
+    spherical_harmonics = get_real_spherical_harmonics(frequencies.freqs, sh, device)
     wigner_calculator = WignerD(l_max, device)
 
 
@@ -101,17 +102,14 @@ def parse_yaml(path):
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator
 
-def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
+def get_real_spherical_harmonics(coordinates, sphericart_obj, device):
     """
     Computes the real, cartesian spherical harmonics functions.
-    :param coordinates: torch.tensor(N_batch, N_freqs, 3) where N_freqs can be N_side_freq**3 if volume reconstruction
-                        and N_side_freq**2 if image reconstruction
+    :param coordinates: torch.tensor(N_freqs, 3)
     :param sphericart_obj: sphericat object for spherical harmonics computation, until a defined l_max, normalized or not
-    :return: torch.tensor(N_batch, N_freqs, (l_max+1)**2)
+    :return: torch.tensor(N_freqs, (l_max+1)**2)
     """
-    batch_size = coordinates.shape[0]
-    coordinates = coordinates.reshape(-1, 3)
-    sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device).reshape(batch_size, -1, (l_max+1)**2)
+    sh_values = torch.as_tensor(sphericart_obj.compute(coordinates.detach().cpu().numpy()), dtype=torch.float32, device=device)
     return sh_values
 
 def get_real_spherical_harmonics_e3nn(coordinates, l_max):
