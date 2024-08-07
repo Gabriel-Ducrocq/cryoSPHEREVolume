@@ -1,6 +1,6 @@
 import torch
 from e3nn.util import explicit_default_types
-import time
+from time import time
 import e3nn
 
 class WignerD():
