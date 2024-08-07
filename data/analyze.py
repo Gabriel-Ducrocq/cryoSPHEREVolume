@@ -35,6 +35,12 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         images_mean = torch.mean(images_for_std).to(device)
         break
 
+    del original_images
+    del images_for_std
+    del batch_poses
+    del data_loader_std
+    del indexes
+    del batch_num
     vae = torch.load(model_path)
     vae.eval()
     """
@@ -76,9 +82,11 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     alms_per_radius = vae.decode(latent_variables)
     # alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
     alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
-    all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
-    rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-    predicted_images_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics,
+    del alms_per_radius
+    del latent_variables
+    #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
+    #rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
+    predicted_images_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, spherical_harmonics,
                                                          radius_indexes)
     real_predicted_image = utils.hartley_to_real(predicted_images_flattened, device, images_mean, images_std)
     #### !!!!!! I AM MSSING THE STANDARDIZATION AND THE GOING FROM HARtLEY TO REAL !!!!!!! #######
