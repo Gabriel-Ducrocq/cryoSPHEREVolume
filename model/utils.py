@@ -227,6 +227,18 @@ def hartley_to_real(images, device, mu=None, std=None):
     fft_images = hartley_to_fourier(images, device, mu, std)
     return fourier_to_real(fft_images)
 
+def hartley_transform_3d(volume):
+    """
+    Performs Hartley transform of a 3d volumes
+    :param volume: torch.tensor(batch_size, side_shape, side_shape, side_shape)
+    :return: torch.tensor(batch_size, side_shape, side_shape, side_shape)
+    """
+    volume = torch.fft.ifftshift(volume, dim=(-3, -2, -1))
+    fourier_volume = torch.fft.fftn(volume, dim=(-3, -2, -1))
+    fourier_volume = torch.fft.fftshift(fourier_volume, dim=(-3, -2, -1))
+    hartley_volume = fourier_volume.real - fourier_volume.imag
+    return hartley_volume
+
 def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
                      images_mean = None, images_std = None):
     """

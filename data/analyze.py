@@ -43,7 +43,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     del batch_num
     vae = torch.load(model_path)
     vae.eval()
-    """
+
     all_coordinates = freqs_volume
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
     alms_per_radius = vae.decode(torch.zeros((1, 8), dtype=torch.float32, device=device))
@@ -68,14 +68,12 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     predicted_volume_hartley *= images_std
     predicted_volume_hartley += images_mean
     print("Hartley shape", predicted_volume_hartley.shape)
-    predicted_volume_fourier = utils.hartley_to_fourier_3d(predicted_volume_hartley, device)
-    predicted_volume_fourier = torch.fft.ifftshift(predicted_volume_fourier)
-    predicted_volume_real = torch.fft.fftn(predicted_volume_fourier).real
-    predicted_volume_real = torch.fft.fftshift(predicted_volume_real)
+    predicted_volume_real = utils.hartley_transform_3d(predicted_volume_hartley[None, :, :])
 
     print("VOLUME SHAPE", predicted_volume_real.shape)
     folder_experiment = "data/dataset/"
-    mrc.MRCFile.write(f"{folder_experiment}volume.mrc", predicted_volume_real.detach().cpu().numpy(), Apix=1.0, is_vol=True)
+    mrc.MRCFile.write(f"{folder_experiment}volume.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
+
     """
     ######### I FIX THE LATENT VARIABLE TO ZERO SINCE THE DATASET IS HOMOGENEOUS !!!!! ###############
     latent_variables = torch.zeros((1, 8), dtype=torch.float32, device=device)
@@ -99,7 +97,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     real_predicted_image = real_predicted_image.repeat(190, 1, 1)
     folder_experiment = "data/dataset/"
     mrc.MRCFile.write(f"{folder_experiment}stacked_image.mrc", real_predicted_image.detach().cpu().numpy(), Apix=1.0, is_vol=True)
-
+    """
 
 if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser()
