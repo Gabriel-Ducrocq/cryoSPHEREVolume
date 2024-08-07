@@ -10,6 +10,7 @@ from dataset import ImageDataSet
 from vae import VAE
 from mlp import MLP
 import yaml
+from wignerD import WignerD
 from grid import Grid
 import numpy as np
 #from astropy.coordinates import cartesian_to_spherical
@@ -93,11 +94,12 @@ def parse_yaml(path):
     batch_size = experiment_settings["batch_size"]
     sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
     spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs, l_max)
+    wigner_calculator = WignerD(l_max, device)
 
 
 
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """

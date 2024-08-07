@@ -24,7 +24,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -76,7 +76,8 @@ def train(yaml_setting_path, debug_mode):
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
             start_wigner = time()
-            all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
+            all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
+            #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
             end_wigner = time()
             start_apply = time()
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
