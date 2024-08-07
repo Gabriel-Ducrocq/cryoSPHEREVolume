@@ -114,9 +114,9 @@ class WignerD():
         """
         r = []
         alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])
-        alpha = alpha.detach().cpu()
-        beta = beta.detach().cpu()
-        gamma = gamma.detach().cpu()
+        alpha = alpha
+        beta = beta
+        gamma = gamma
         start = time()
         for l in range(l_max+1):
             r_inter = self.wigner_D(l, alpha, beta, gamma)
