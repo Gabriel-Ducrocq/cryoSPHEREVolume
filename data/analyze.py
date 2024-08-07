@@ -26,7 +26,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume,  l_max = utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics = model.utils.parse_yaml(
         yaml_setting_path)
 
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
@@ -37,6 +37,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
 
     vae = torch.load(model_path)
     vae.eval()
+    """
     all_coordinates = freqs_volume
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
     alms_per_radius = vae.decode(torch.zeros((1, 8), dtype=torch.float32, device=device))
@@ -69,19 +70,25 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     print("VOLUME SHAPE", predicted_volume_real.shape)
     folder_experiment = "data/dataset/"
     mrc.MRCFile.write(f"{folder_experiment}volume.mrc", predicted_volume_real.detach().cpu().numpy(), Apix=1.0, is_vol=True)
-
-
-    all_coordinates = freqs
-    radiuses = torch.sqrt(torch.sum(all_coordinates**2, dim=-1))
-    alms_per_coordinate = vae.decode(radiuses[None, :, None])
-    print("COORDINSTES", all_coordinates.shape)
-    all_sph = utils.get_real_spherical_harmonics(all_coordinates[None, :, :], sphericartObj, device, l_max)
-    predicted_image_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, all_sph, radius_indexes)
+    """
+    ######### I FIX THE LATENT VARIABLE TO ZERO SINCE THE DATASET IS HOMOGENEOUS !!!!! ###############
+    latent_variables = torch.zeros((1, 3), dtype=torch.float32, device=device)
+    alms_per_radius = vae.decode(latent_variables)
+    # alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
+    alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
+    all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
+    rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
+    predicted_images_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics,
+                                                         radius_indexes)
+    real_predicted_image = utils.hartley_to_real(predicted_images_flattened, device, images_mean, images_std)
     #### !!!!!! I AM MSSING THE STANDARDIZATION AND THE GOING FROM HARtLEY TO REAL !!!!!!! #######
-    predicted_image = predicted_image_flattened.reshape(190, 190)
-    plt.imshow(predicted_image.detach().cpu().numpy(), cmap="gray")
+    plt.imshow(real_predicted_image.detach().cpu().numpy(), cmap="gray")
     plt.savefig("data/dataset/image.png")
     plt.show()
+
+    real_predicted_image = torch.repeat(real_predicted_image, (190, 190, 190))
+    folder_experiment = "data/dataset/"
+    mrc.MRCFile.write(f"{folder_experiment}stacked_image.mrc", real_predicted_image.detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
 
 if __name__ == '__main__':
