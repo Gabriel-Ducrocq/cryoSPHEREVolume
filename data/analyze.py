@@ -96,7 +96,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     plt.show()
 
     print("SHAPE OF SPHER", spherical_harmonics.shape)
-    real_predicted_image = torch.repeat(real_predicted_image, (190, 1, 1))
+    real_predicted_image = real_predicted_image.repeat(190, 1, 1)
     folder_experiment = "data/dataset/"
     mrc.MRCFile.write(f"{folder_experiment}stacked_image.mrc", real_predicted_image.detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
