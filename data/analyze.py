@@ -72,6 +72,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         all_sph = torch.cat(all_sph, dim=-1)
         all_chunks_sph.append(all_sph)
 
+    del all_coordinates
     all_sph = torch.cat(all_chunks_sph, dim=0)
     del all_chunks_sph
     ## I FEED THE RADIUSES DIRECTLY !
