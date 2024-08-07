@@ -72,7 +72,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     mrc.MRCFile.write(f"{folder_experiment}volume.mrc", predicted_volume_real.detach().cpu().numpy(), Apix=1.0, is_vol=True)
     """
     ######### I FIX THE LATENT VARIABLE TO ZERO SINCE THE DATASET IS HOMOGENEOUS !!!!! ###############
-    latent_variables = torch.zeros((1, 3), dtype=torch.float32, device=device)
+    latent_variables = torch.zeros((1, 8), dtype=torch.float32, device=device)
     alms_per_radius = vae.decode(latent_variables)
     # alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
     alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
