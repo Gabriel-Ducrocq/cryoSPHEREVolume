@@ -149,6 +149,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     """
     #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
     #estimates provided by the neural net
+    print("Rad inside", indexes)
     spherical_harmonics[:, indexes ==0, :] = 0
     print("SH MAX", torch.max(spherical_harmonics))
     print("SH MIN", torch.min(spherical_harmonics))
