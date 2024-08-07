@@ -58,6 +58,9 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         print(alms_radiuses_volume_l.shape)
         alms_radiuses_volume.append(alms_radiuses_volume_l)
 
+    del alms_per_radius
+    del all_radiuses_volumes
+    del wigner_calculator
     alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
     all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
