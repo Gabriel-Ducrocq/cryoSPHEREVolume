@@ -87,16 +87,16 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
     #rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
     spherical_harmonics = torch.cat(spherical_harmonics, dim=-1)[None, :, :]
-    print("SHAPE OF SPHER", spherical_harmonics.shape)
     predicted_images_flattened = utils.spherical_synthesis_hartley(alms_per_coordinate, spherical_harmonics,
                                                          radius_indexes)
     real_predicted_image = utils.hartley_to_real(predicted_images_flattened, device, images_mean, images_std)
     #### !!!!!! I AM MSSING THE STANDARDIZATION AND THE GOING FROM HARtLEY TO REAL !!!!!!! #######
-    plt.imshow(real_predicted_image.detach().cpu().numpy(), cmap="gray")
+    plt.imshow(real_predicted_image[0].detach().cpu().numpy(), cmap="gray")
     plt.savefig("data/dataset/image.png")
     plt.show()
 
-    real_predicted_image = torch.repeat(real_predicted_image, (190, 190, 190))
+    print("SHAPE OF SPHER", spherical_harmonics.shape)
+    real_predicted_image = torch.repeat(real_predicted_image, (190, 1, 1))
     folder_experiment = "data/dataset/"
     mrc.MRCFile.write(f"{folder_experiment}stacked_image.mrc", real_predicted_image.detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
