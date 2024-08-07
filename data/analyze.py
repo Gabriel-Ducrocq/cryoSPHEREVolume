@@ -64,8 +64,16 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
     torch.cuda.empty_cache()
-    all_sph = utils.get_real_spherical_harmonics(all_coordinates, sphericartObj, device, l_max)
-    all_sph = torch.cat(all_sph, dim=-1)
+    all_chunks_sph = []
+    for i in range(1000):
+        start = i*6859
+        end = i*6859 + 6859
+        all_sph = utils.get_real_spherical_harmonics(all_coordinates[start:end], sphericartObj, device, l_max)
+        all_sph = torch.cat(all_sph, dim=-1)
+        all_chunks_sph.append(all_sph)
+
+    all_sph = torch.cat(all_chunks_sph, dim=0)
+    del all_chunks_sph
     ## I FEED THE RADIUSES DIRECTLY !
     predicted_volume_hartley_flattened = torch.einsum("b s l, s l -> b s", alms_radiuses_volume, all_sph)
     predicted_volume_hartley_flattened[:, all_radiuses_volumes == 0.0] = 0
