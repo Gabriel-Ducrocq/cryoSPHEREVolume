@@ -59,7 +59,6 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         alms_radiuses_volume.append(alms_radiuses_volume_l)
 
     del alms_per_radius
-    del all_radiuses_volumes
     del wigner_calculator
     alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
     print("COORDINSTES", all_coordinates.shape)
@@ -86,6 +85,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     ## I FEED THE RADIUSES DIRECTLY !
     #predicted_volume_hartley_flattened = torch.einsum("b s l, s l -> b s", alms_radiuses_volume, all_sph)
     predicted_volume_hartley_flattened[:, all_radiuses_volumes == 0.0] = 0
+    del all_radiuses_volumes
     predicted_volume_hartley = predicted_volume_hartley_flattened.reshape(190, 190, 190)
     predicted_volume_hartley *= images_std
     predicted_volume_hartley += images_mean
