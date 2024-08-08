@@ -71,6 +71,9 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         end = i*6859 + 6859
         all_sph = utils.get_real_spherical_harmonics(all_coordinates[start:end], sphericartObj, device, l_max)
         all_sph = torch.cat(all_sph, dim=-1)
+        print("SHAPESSSSSS")
+        print(all_sph.shape)
+        print(alms_radiuses_volume)
         predicted_volume_hartley_flattened_slice = torch.einsum("b s l, s l -> b s", alms_radiuses_volume[start:end], all_sph)
         #all_chunks_sph.append(all_sph)
         predicted_volume_hartley_flattened.append(predicted_volume_hartley_flattened_slice)
