@@ -73,15 +73,15 @@ def analyze(yaml_setting_path, model_path, volumes_path):
         all_sph = torch.cat(all_sph, dim=-1)
         print("SHAPESSSSSS")
         print(all_sph.shape)
-        print(alms_radiuses_volume)
-        predicted_volume_hartley_flattened_slice = torch.einsum("b s l, s l -> b s", alms_radiuses_volume[start:end], all_sph)
+        print(alms_radiuses_volume.shape)
+        predicted_volume_hartley_flattened_slice = torch.einsum("b s l, s l -> b s", alms_radiuses_volume[None, start:end], all_sph)
         #all_chunks_sph.append(all_sph)
         predicted_volume_hartley_flattened.append(predicted_volume_hartley_flattened_slice)
 
     del all_coordinates
     del predicted_volume_hartley_flattened_slice
     #all_sph = torch.cat(all_chunks_sph, dim=0)
-    all_predicted_volume_hartley_flattened = torch.cat(predicted_volume_hartley_flattened, dim=0)
+    predicted_volume_hartley_flattened = torch.cat(predicted_volume_hartley_flattened, dim=1)
     del all_chunks_sph
     ## I FEED THE RADIUSES DIRECTLY !
     #predicted_volume_hartley_flattened = torch.einsum("b s l, s l -> b s", alms_radiuses_volume, all_sph)
