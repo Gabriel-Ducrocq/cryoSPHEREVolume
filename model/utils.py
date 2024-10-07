@@ -54,6 +54,7 @@ def parse_yaml(path):
     else:
         device = "cpu"
 
+    use_ctf = experiment_settings["use_ctf"]
     l_max = experiment_settings["l_max"]
     particles_path = experiment_settings["particles_path"]
     apix = image_settings["apix"]
@@ -106,7 +107,7 @@ def parse_yaml(path):
 
 
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
