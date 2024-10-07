@@ -5,6 +5,7 @@ from time import time
 from model.grid import Grid, rotate_grid
 from model import utils
 from model import loss
+from model import renderer
 import wandb
 import argparse
 import model.utils
@@ -24,7 +25,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -83,7 +84,8 @@ def train(yaml_setting_path, debug_mode):
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
             end_apply = time()
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, radius_indexes)
-            nll = loss.compute_loss(predicted_images, flattened_batch_images, latent_mean, latent_std, experiment_settings,
+            batch_predicted_images = (renderer.apply_ctf(predicted_images, ctf, indexes)- images_mean)/images_std
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), flattened_batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
             start_grad = time()

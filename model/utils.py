@@ -1,6 +1,6 @@
 import torch
 import sphericart as sct
-
+from ctf import CTF
 import wandb
 import sys
 import os
@@ -80,6 +80,7 @@ def parse_yaml(path):
 
 
     particles_star = starfile.read(experiment_settings["star_file"])
+    ctf_experiment = CTF.from_starfile(experiment_settings["star_file"], apix = apix_downsize, side_shape=Npix_downsize , device=device)
     dataset = ImageDataSet(apix, Npix, particles_star["particles"], particles_path, down_side_shape=Npix_downsize)
     #dataset = ImageDataSet(apix, Npix, particles_star, particles_path, down_side_shape=Npix_downsize)
 
@@ -100,7 +101,7 @@ def parse_yaml(path):
 
 
     return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
@@ -156,6 +157,8 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     """
     #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
     #estimates provided by the neural net
+    batch_size = alm_per_coord.shape[0]
+    side_shape = alm_per_coord.shape[1]
     print("Rad inside", indexes.shape)
     print(spherical_harmonics)
     spherical_harmonics[:, indexes ==0, :] = 0
@@ -166,7 +169,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     print("ALMS MIN", torch.max(alm_per_coord))
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
-    return images_radius_0_nan
+    return images_radius_0_nan.reshape(batch_size, side_shape, side_shape)
 
 
 def hartley_to_fourier(image,device,  mu=None, std=None ):
