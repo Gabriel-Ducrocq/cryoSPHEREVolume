@@ -23,7 +23,7 @@ def fourier2d_to_primal(fourier_images):
     r = torch.fft.fftshift(torch.fft.ifft2(f, dim=(-2, -1), s=(f.shape[-2], f.shape[-1])),dim=(-2, -1)).real
     return r
 
-def apply_ctf(images, ctf, indexes):
+def apply_ctf(fourier_images, ctf, indexes):
     """
     apply ctf to images.
     images: torch.tensor(batch_size, N_pix, N_pix)
@@ -32,7 +32,7 @@ def apply_ctf(images, ctf, indexes):
     return ctf corrupted images
     """
     fourier_images *= -ctf.compute_ctf(indexes)
-    return ctf_corrupted
+    return fourier_images
 
 
 
