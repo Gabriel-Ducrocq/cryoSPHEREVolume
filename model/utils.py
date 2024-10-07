@@ -1,6 +1,5 @@
 import torch
 import sphericart as sct
-from ctf import CTF
 import wandb
 import sys
 import os
@@ -9,6 +8,7 @@ sys.path.append(path)
 from dataset import ImageDataSet
 from vae import VAE
 from mlp import MLP
+from ctf import CTF
 import yaml
 from wignerD import WignerD
 from grid import Grid
