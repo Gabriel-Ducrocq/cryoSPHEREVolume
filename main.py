@@ -85,10 +85,10 @@ def train(yaml_setting_path, debug_mode):
             end_apply = time()
             predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, radius_indexes)
             if use_ctf:
-                batch_predicted_images = (renderer.apply_ctf(predicted_images, ctf, indexes)- images_mean)/images_std
+                batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
                 batch_predicted_images = predicted_images
-                
+
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), flattened_batch_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
