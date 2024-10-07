@@ -68,9 +68,12 @@ def analyze(yaml_setting_path, model_path, volumes_path):
     for i in range(1000):
         start = i*6859
         end = i*6859 + 6859
+        print("all_coordinates shape", all_coordinates[start:end].shape)
         all_sph = utils.get_real_spherical_harmonics(all_coordinates[start:end], sphericartObj, device, l_max)
-        all_sph = torch.cat(all_sph, dim=-1)
         print("SHAPESSSSSS")
+        print(all_sph.shape)
+        all_sph = torch.cat(all_sph, dim=-1)
+        print("SHAPESSSSSS AGAIN")
         print(all_sph.shape)
         print(alms_radiuses_volume.shape)
         predicted_volume_hartley_flattened_slice = torch.einsum("b s l, s l -> b s", alms_radiuses_volume[:, start:end, :], all_sph)
@@ -79,6 +82,7 @@ def analyze(yaml_setting_path, model_path, volumes_path):
 
     del all_coordinates
     del predicted_volume_hartley_flattened_slice
+    print("SIZE OF HARTLEY", predicted_volume_hartley_flattened[0].shape)
     #all_sph = torch.cat(all_chunks_sph, dim=0)
     predicted_volume_hartley_flattened = torch.cat(predicted_volume_hartley_flattened, dim=1)
     del all_chunks_sph
