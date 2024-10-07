@@ -25,10 +25,15 @@ def get_radius_indexes(freqs, device):
     :param freqs: torch.tensor(side_hape**2, 3)
     :return: torch.tensor(side_shape**2)
     """
+    #Computes the radius in Fourier space:
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
+    #Get the unique radiuses in the images
     unique_radius = torch.unique(radius, sorted=True)
+    #Creates one index per unique radius
     unique_indexes = torch.linspace(0, len(unique_radius)-1, len(unique_radius), dtype=torch.int, device=device)
+    #Maps each unique radious to its index
     rad_and_ind = torch.stack([unique_radius, unique_indexes], dim=-1)
+    #For each non unique radius, get its index in the unique radius. This way, we know that different Fourier frequencies with same radiuses have the same entry in the vae.
     indexes = torch.stack([rad_and_ind[rad_and_ind[:, 0] == rad, 1] for rad in radius], dim=0)
     return indexes.to(torch.int32)[:, 0], unique_radius
 
@@ -158,7 +163,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, indexes):
     #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
     #estimates provided by the neural net
     batch_size = alm_per_coord.shape[0]
-    side_shape = alm_per_coord.shape[1]
+    side_shape = int(np.sqrt(alm_per_coord.shape[1]))
     print("Rad inside", indexes.shape)
     print(spherical_harmonics)
     spherical_harmonics[:, indexes ==0, :] = 0
