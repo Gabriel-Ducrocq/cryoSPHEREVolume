@@ -25,7 +25,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
