@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from time import time
 import matplotlib.pyplot as plt
-import einops
 
 def primal_to_fourier2d(images):
     """
