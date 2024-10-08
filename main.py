@@ -71,8 +71,7 @@ def train(yaml_setting_path, debug_mode):
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
-            ######### I FIX THE LATENT VARIABLE TO ZERO SINCE THE DATASET IS HOMOGENEOUS !!!!! ###############
-            latent_variables = torch.zeros_like(latent_variables)
+            #latent_variables = torch.zeros_like(latent_variables)
             alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
