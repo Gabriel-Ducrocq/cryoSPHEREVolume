@@ -168,6 +168,7 @@ if __name__ == '__main__':
     args = parser_arg.parse_args()
     model_path = args.model
     path = args.experiment_yaml
+    encode = args.encode
     analyze(path, model_path, encode)
 
 
