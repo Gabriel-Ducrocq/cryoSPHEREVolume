@@ -59,7 +59,6 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
             alms_radiuses_volume.append(alms_radiuses_volume_l)
 
         del alms_per_radius
-        del wigner_calculator
         alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
         print("COORDINSTES", all_coordinates.shape)
         torch.cuda.empty_cache()
