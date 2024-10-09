@@ -18,7 +18,7 @@ from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 import matplotlib.pyplot as plt
 
 
-def decode(all_latent_variables, model_path):
+def decode(yaml_setting_path, all_latent_variables, model_path):
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
     yaml_setting_path)
@@ -133,7 +133,7 @@ def analyze(yaml_setting_path, model_path, encode, latent_path):
         compute_latent_variables(yaml_setting_path, model_path)
     else:
         latent_variables = np.load(latent_path)
-        decode(latent_variables, model_path)
+        decode(yaml_setting_path, latent_variables, model_path)
 
     """
     ######### I FIX THE LATENT VARIABLE TO ZERO SINCE THE DATASET IS HOMOGENEOUS !!!!! ###############
