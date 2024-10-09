@@ -107,7 +107,7 @@ def compute_latent_variables(yaml_setting_path, model_path):
     vae = torch.load(model_path)
     vae.eval()
     all_latent_variables = []
-    data_loader_std = iter(DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=False))
+    data_loader = iter(DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=False))
     for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
         batch_images = batch_images.to(device)
         batch_images = (batch_images - images_mean)/(images_std + 1e-15)
