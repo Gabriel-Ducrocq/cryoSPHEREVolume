@@ -55,8 +55,6 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
             end = i*6859 + 6859
             print("all_coordinates shape", all_coordinates[start:end].shape)
             all_sph = utils.get_real_spherical_harmonics(all_coordinates[start:end], sphericartObj, device, l_max)
-            print("SHAPESSSSSS")
-            print(all_sph.shape)
             all_sph = torch.cat(all_sph, dim=-1)
             print("SHAPESSSSSS AGAIN")
             print(all_sph.shape)
