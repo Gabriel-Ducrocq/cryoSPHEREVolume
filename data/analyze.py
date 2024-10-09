@@ -19,6 +19,21 @@ import matplotlib.pyplot as plt
 
 
 def decode(yaml_setting_path, all_latent_variables, model_path):
+    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
+    for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
+        images_std = torch.std(images_for_std).to(device)
+        images_mean = torch.mean(images_for_std).to(device)
+        break
+
+    del original_images
+    del images_for_std
+    del batch_poses
+    del data_loader_std
+    del indexes
+    del batch_num
+
+
+
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
     yaml_setting_path)
@@ -88,19 +103,6 @@ def compute_latent_variables(yaml_setting_path, model_path):
     vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
     yaml_setting_path)
-
-    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
-    for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
-        images_std = torch.std(images_for_std).to(device)
-        images_mean = torch.mean(images_for_std).to(device)
-        break
-
-    del original_images
-    del images_for_std
-    del batch_poses
-    del data_loader_std
-    del indexes
-    del batch_num
 
     vae = torch.load(model_path)
     vae.eval()
