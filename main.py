@@ -62,8 +62,6 @@ def train(yaml_setting_path, debug_mode):
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
             start_batch = time()
-            # start = time()
-            ## WHAT I AM DOING HERE IS WRONG, IT IS JUST FOR DEBUGGING
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
             non_standardized = batch_images.flatten(start_dim=1, end_dim=2)
@@ -109,7 +107,6 @@ def train(yaml_setting_path, debug_mode):
             scheduler.step()
 
         if not debug_mode:
-            pass
             model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=device,
                     true_images=non_standardized, predicted_images=predicted_images.flatten(start_dim=1, end_dim=2), real_image=original_images,
                                          images_mean=images_mean, images_std=images_std)
