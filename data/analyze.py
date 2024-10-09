@@ -29,9 +29,8 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
     all_coordinates = freqs_volume
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
 
-    print(all_latent_variables.shape)
     for k, latent_variables in enumerate(all_latent_variables):
-        latent_variables = latent_variables[None, :, :]
+        latent_variables = latent_variables[None, :]
         alms_per_radius = vae.decode(latent_variables)
         #The next tensor is ((l_max+1)**2, N_coordinates)
         ## I transposed the alm per radius: it is of shape (N_unique_radiuses, (l_max+1)**2)
