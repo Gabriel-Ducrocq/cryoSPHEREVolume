@@ -164,12 +164,14 @@ if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser()
     parser_arg.add_argument('--experiment_yaml', type=str, required=True)
     parser_arg.add_argument("--model", type=str, required=True)
+    parser_arg.add_argument("--latent_path", type=str, required=False)
     parser_arg.add_argument('--encode', action=argparse.BooleanOptionalAction)
     args = parser_arg.parse_args()
     model_path = args.model
     path = args.experiment_yaml
     encode = args.encode
-    analyze(path, model_path, encode)
+    latent_path = args.latent_path
+    analyze(path, model_path, encode, latent_path)
 
 
 
