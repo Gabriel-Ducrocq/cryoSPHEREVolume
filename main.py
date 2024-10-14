@@ -69,7 +69,17 @@ def train(yaml_setting_path, debug_mode):
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
-            batch_translated_images = image_translator.transform(batch_images, batch_poses_translation[:, None, :]).flatten(start_dim=1, end_dim=2)
+
+
+            ### TEMPORARY, NOT CLEAN !!!
+            images_real = model.utils.hartley_to_real(batch_images)
+            batch_translated_images_real = image_translator.transform(images_real, batch_poses_translation[:, None, :]).flatten(start_dim=1, end_dim=2)
+            r = torch.fft.ifftshift(batch_translated_images_real, dim=(-2, -1))
+            fourier_proj = torch.fft.fftshift(torch.fft.fft2(r, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
+                                                dim=(-2, -1))
+            batch_translated_images_fourier = fourier_proj.real - fourier_proj.imag
+
+
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
             #latent_variables = torch.zeros_like(latent_variables)
             alms_per_radius = vae.decode(latent_variables)
@@ -88,7 +98,7 @@ def train(yaml_setting_path, debug_mode):
             else:
                 batch_predicted_images = predicted_images
 
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images, latent_mean, latent_std, experiment_settings,
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_fourier, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
             start_grad = time()
