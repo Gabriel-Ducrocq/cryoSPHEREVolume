@@ -102,6 +102,12 @@ def compute_latent_variables(yaml_setting_path, model_path):
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
     yaml_setting_path)
 
+    data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
+    for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
+        images_std = torch.std(images_for_std).to(device)
+        images_mean = torch.mean(images_for_std).to(device)
+        break
+
     vae = torch.load(model_path)
     vae.eval()
     all_latent_variables = []
