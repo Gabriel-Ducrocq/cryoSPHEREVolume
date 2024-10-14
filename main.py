@@ -24,7 +24,7 @@ def train(yaml_setting_path, debug_mode):
     :param yaml_setting_path: str, path the yaml containing all the details of the experiment
     :return:
     """
-    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
+    vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
         scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
@@ -60,7 +60,7 @@ def train(yaml_setting_path, debug_mode):
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
         start_tot = time()
-        for batch_num, (indexes, original_images, batch_images, batch_poses, _) in enumerate(data_loader):
+        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation) in enumerate(data_loader):
             start_batch = time()
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
@@ -68,6 +68,7 @@ def train(yaml_setting_path, debug_mode):
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
+            batch_translated_images = image_translator.transform(batch_images, batch_poses_translation[:, None, :]).flatten(start_dim=1, end_dim=2)
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
             #latent_variables = torch.zeros_like(latent_variables)
             alms_per_radius = vae.decode(latent_variables)
@@ -86,7 +87,7 @@ def train(yaml_setting_path, debug_mode):
             else:
                 batch_predicted_images = predicted_images
 
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), flattened_batch_images, latent_mean, latent_std, experiment_settings,
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
             start_grad = time()

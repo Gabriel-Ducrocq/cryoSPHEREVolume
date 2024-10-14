@@ -6,6 +6,7 @@ import os
 path = os.path.abspath("model")
 sys.path.append(path)
 from dataset import ImageDataSet
+from renderer import SpatialGridTranslate
 from vae import VAE
 from mlp import MLP
 from ctf import CTF
@@ -103,10 +104,11 @@ def parse_yaml(path):
     #spherical_harmonics = get_real_spherical_harmonics_e3nn(frequencies.freqs, l_max)
     spherical_harmonics = get_real_spherical_harmonics(frequencies.freqs, sh, device, l_max)
     wigner_calculator = WignerD(l_max, device)
+    image_translator = SpatialGridTranslate(D=Npix_downsize, device=device)
 
 
 
-    return vae, optimizer, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
+    return vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
