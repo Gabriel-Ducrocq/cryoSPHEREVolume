@@ -248,8 +248,8 @@ def real_to_hartley(images):
     :param images: torch.tensor(N_batch, N_pix, N_pix)
     return torch.tensor(N_batch, N_freq, N_freq)
     """
-    images = torch.fft.ifftshift(images, dim=(-2, -1))
-    fourier_proj = torch.fft.fftshift(torch.fft.fft2(images, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
+    r = torch.fft.ifftshift(images, dim=(-2, -1))
+    fourier_proj = torch.fft.fftshift(torch.fft.fft2(r, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
                                         dim=(-2, -1))
     return fourier_to_hartley(fourier_proj)
 
