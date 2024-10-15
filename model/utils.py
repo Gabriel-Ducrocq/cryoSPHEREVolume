@@ -238,7 +238,7 @@ def fourier_to_hartley(fft_images):
     :param fft_images: torch.tensor(N_batch, N_freq, N_freq)
     return torch.tensor(N_batch, N_freq, N_freq)
     """
-    return fourier_proj.real - fourier_proj.imag
+    return fft_images.real - fft_images.imag
 
 def real_to_hartley(images):
     """
@@ -316,8 +316,6 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     true_images = true_images.reshape(batch_size, side_shape, side_shape)
     true_images_fourier = hartley_to_fourier(true_images[:1])
     real_image_again = fourier2d_to_primal(true_images_fourier)
-
-    real_image_again = hartley_to_real(true_images[:1], device)
 
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
