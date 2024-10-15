@@ -232,6 +232,8 @@ def hartley_to_fourier_3d(volume, device):
     return volume
 
 
+
+
 def fourier_to_hartley(fft_images):
     """
     Computes the Hartley transform of images in Fourier space.
@@ -258,7 +260,7 @@ def hartley_to_real(images_hartley):
     return torch.tensor(N_batch, N_pix, N_pix)
     """
     #Hartley transform is an involution, so hartley_transform(hartley_images) get the Fourier transform back
-    images_fft = fourier_to_hartley(images_hartley)
+    images_fft = real_to_hartley(images_hartley)
     r = torch.fft.ifftshift(image_fft, dim=(-2, -1))
     images_real = torch.fft.fftshift(torch.fft.fft2(r, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
                                         dim=(-2, -1)).real
@@ -310,12 +312,12 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     side_shape = int(np.sqrt(predicted_images.shape[1]))
     batch_size = predicted_images.shape[0]
     predicted_images = predicted_images.reshape(batch_size, side_shape, side_shape)
-    predicted_fourier = hartley_to_fourier(predicted_images[:1])*(images_std + 1e-15) + images_mean
-    real_predicted_image = fourier2d_to_primal(predicted_fourier)
+    predicted_images*=(images_std + 1e-15)
+    predicted_images+= images_mean
+    real_predicted_image = real_to_hartley(predicted_images[:1])
 
     true_images = true_images.reshape(batch_size, side_shape, side_shape)
-    true_images_fourier = hartley_to_fourier(true_images[:1])
-    real_image_again = fourier2d_to_primal(true_images_fourier)
+    real_image_again = real_to_hartley(true_images[:1])
 
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
