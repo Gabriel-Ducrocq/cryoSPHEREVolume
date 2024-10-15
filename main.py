@@ -71,7 +71,9 @@ def train(yaml_setting_path, debug_mode):
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
             images_real = model.utils.hartley_to_real(batch_images)
             batch_translated_images_real = image_translator.transform(images_real, batch_poses_translation[:, None, :]).flatten(start_dim=1, end_dim=2)
-            batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real).flatten(start_dim=1, end_dim=2)
+            batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
+            batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
+            batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
 
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
             #latent_variables = torch.zeros_like(latent_variables)

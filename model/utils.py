@@ -20,6 +20,17 @@ import e3nn
 from time import time
 import pytorch3d
 
+
+def fourier2d_to_primal(fourier_images):
+    """
+    Computes the inverse fourier transform
+    fourier_images: torch.tensor(batch_size, N_pix, N_pix)
+    return: torch.tensor(batch_size, N_pix, N_pix) images in real space
+    """
+    f = torch.fft.ifftshift(fourier_images, dim=(-2, -1))
+    r = torch.fft.fftshift(torch.fft.ifft2(f, dim=(-2, -1), s=(f.shape[-2], f.shape[-1])),dim=(-2, -1)).real
+    return r
+
 def get_radius_indexes(freqs, device):
     """
     Link the index of the unique indexes to the corresponding frequencies
@@ -263,15 +274,15 @@ def fourier_to_real(fft_images):
     """
     return torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(fft_images, dim=(-1, -2)))).real
 
-def hartley_to_real(images, device, mu=None, std=None):
-    """
-    Goes from Hartley space to real space
-    :param images: torch.tensor(batch_size, side_shape, side_shape) of images in Hartley space.
-    :param device: device, either gpu or cpu
-    :return: torch.tensor(batch_size, side_shape, side_shape) of images in real space.
-    """
-    fft_images = hartley_to_fourier(images, device, mu, std)
-    return fourier_to_real(fft_images)
+#def hartley_to_real(images, device, mu=None, std=None):
+#    """
+#    Goes from Hartley space to real space
+#    :param images: torch.tensor(batch_size, side_shape, side_shape) of images in Hartley space.
+#    :param device: device, either gpu or cpu
+#    :return: torch.tensor(batch_size, side_shape, side_shape) of images in real space.
+#    """
+#    fft_images = hartley_to_fourier(images, device, mu, std)
+#    return fourier_to_real(fft_images)
 
 def hartley_transform_3d(volume):
     """
@@ -296,8 +307,18 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimize
     :param vae:
     :return:
     """
+    side_shape = int(np.sqrt(predicted_images.shape[1]))
+    batch_size = predicted_images.shape[0]
+    predicted_images = predicted_images.reshape(batch_size, side_shape, side_shape)
+    predicted_fourier = hartley_to_fourier(predicted_images[:1])*(images_std + 1e-15) + images_mean
+    real_predicted_image = fourier2d_to_primal(predicted_fourier)
+
+    true_images = true_images.reshape(batch_size, side_shape, side_shape)
+    true_images_fourier = hartley_to_fourier(true_images[:1])
+    real_image_again = fourier2d_to_primal(true_images_fourier)
+
     real_image_again = hartley_to_real(true_images[:1], device)
-    real_predicted_image = hartley_to_real(predicted_images[:1], device, images_mean, images_std)
+
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
     wandb.log({"lr":optimizer.param_groups[0]['lr']})
