@@ -220,6 +220,41 @@ def hartley_to_fourier_3d(volume, device):
     fourier_volume[0, 0, 0] = volume[0, 0, 0]
     return volume
 
+
+def fourier_to_hartley(fft_images):
+    """
+    Computes the Hartley transform of images in Fourier space.
+    :param fft_images: torch.tensor(N_batch, N_freq, N_freq)
+    return torch.tensor(N_batch, N_freq, N_freq)
+    """
+    return fourier_proj.real - fourier_proj.imag
+
+def real_to_hartley(images):
+    """
+    Computes the Hartley transform of images in real space.
+    :param images: torch.tensor(N_batch, N_pix, N_pix)
+    return torch.tensor(N_batch, N_freq, N_freq)
+    """
+    images = torch.fft.ifftshift(images, dim=(-2, -1))
+    fourier_proj = torch.fft.fftshift(torch.fft.fft2(images, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
+                                        dim=(-2, -1))
+    return fourier_to_hartley(fourier_proj)
+
+def hartley_to_real(images_hartley):
+    """
+    Computes the real images base on their Hartley transform.
+    :param images: torch.tensor(N_batch, N_freq, N_freq)
+    return torch.tensor(N_batch, N_pix, N_pix)
+    """
+    #Hartley transform is an involution, so hartley_transform(hartley_images) get the Fourier transform back
+    images_fft = fourier_to_hartley(images_hartley)
+    r = torch.fft.ifftshift(image_fft, dim=(-2, -1))
+    images_real = torch.fft.fftshift(torch.fft.fft2(r, dim=(-2, -1), s=(r.shape[-2], r.shape[-1])),
+                                        dim=(-2, -1)).real
+    return images_real
+
+
+
 def fourier_to_real(fft_images):
     """
     Compute the inverse fft to recover the image
