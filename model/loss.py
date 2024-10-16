@@ -8,7 +8,7 @@ def compute_image_loss(true_image, predicted_image):
     :param predicted_image: torch.tensor(N_batch, side_shape**2), in Hartley space
     :return: torch.tensor(1) of the average over the batch of the squared error loss between images
     """
-    return torch.mean(torch.sum((true_image - predicted_image)**2, dim=-1))
+    return torch.mean(torch.mean((true_image - predicted_image)**2, dim=-1))
 
 
 def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
