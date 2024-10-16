@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 
 
 def decode(yaml_setting_path, all_latent_variables, model_path):
-    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
+    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, 
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf)= utils.parse_yaml(
     yaml_setting_path)
 
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
@@ -98,8 +98,8 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
 
 
 def compute_latent_variables(yaml_setting_path, model_path):
-    vae, optimizer, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf = utils.parse_yaml(
+    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf) = utils.parse_yaml(
     yaml_setting_path)
 
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
