@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 
 def decode(yaml_setting_path, all_latent_variables, model_path):
-    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, 
+    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, 
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf)= utils.parse_yaml(
     yaml_setting_path)
 
@@ -98,7 +98,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
 
 
 def compute_latent_variables(yaml_setting_path, model_path):
-    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
+    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf) = utils.parse_yaml(
     yaml_setting_path)
 
