@@ -29,7 +29,7 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
-    :param images: torch.tensor(batch_size, N_pix), images
+    :param images: torch.tensor(batch_size, side_shape**2), images
     :param latent_mean:torch.tensor(batch_size, latent_dim), mean of the approximate latent distribution
     :param latent_std:torch.tensor(batch_size, latent_dim), std of the approximate latent distribution
     :param loss_weights: dict, containing the strength of losses for each loss
@@ -44,5 +44,5 @@ def compute_loss(predicted_images, images, latent_mean, latent_std, experiment_s
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
     tracking_dict["kl_prior_latent"].append(KL_prior_latent.detach().cpu().numpy())
 
-    loss = rmsd + loss_weights["KL_prior_latent"]*KL_prior_latent
+    loss = rmsd + loss_weights["KL_prior_latent"]*KL_prior_latent/images.shape[1]
     return loss
