@@ -12,7 +12,7 @@ from mlp import MLP
 from ctf import CTF
 import yaml
 from wignerD import WignerD
-from grid import Grid
+from grid import Grid, Mask
 import numpy as np
 #from astropy.coordinates import cartesian_to_spherical
 import starfile
@@ -77,7 +77,7 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    circular_mask = grid.Mask(Npix_downsize, apix_downsize)
+    circular_mask = Mask(Npix_downsize, apix_downsize)
 
     frequencies = Grid(Npix_downsize, apix_downsize, device)
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask, device)
