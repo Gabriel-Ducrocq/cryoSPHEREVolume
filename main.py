@@ -25,7 +25,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -87,7 +87,7 @@ def train(yaml_setting_path, debug_mode):
             start_apply = time()
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
             end_apply = time()
-            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, radius_indexes)
+            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes)
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
