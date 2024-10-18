@@ -41,7 +41,7 @@ def get_radius_indexes(freqs, circular_mask, device):
     #Computes the radius in Fourier space:
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     #Get the radius within the mask.
-    radius_within_mask = radius[circular_mask==1]
+    radius_within_mask = radius[circular_mask.mask==1]
     #Get the unique radiuses in the images within the mask
     unique_radius = torch.unique(radius_within_mask, sorted=True)
     #Creates one index per unique radius
