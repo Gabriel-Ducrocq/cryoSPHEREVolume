@@ -183,7 +183,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mas
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
     flat_images = torch.zeros(batch_size, side_shape)
-    flat_images[circular_mask == 1] = images_radius_0_nan
+    flat_images[:, circular_mask == 1] = images_radius_0_nan
     return flat_images.reshape(batch_size, side_shape, side_shape)
 
 
