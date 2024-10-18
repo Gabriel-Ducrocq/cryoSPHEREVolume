@@ -87,7 +87,7 @@ def train(yaml_setting_path, debug_mode):
             start_apply = time()
             rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
             end_apply = time()
-            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes)
+            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:

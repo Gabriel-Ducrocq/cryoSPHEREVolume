@@ -166,13 +166,14 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     """
     return alm[:, radiuses_index, :]
 
-def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mask, indexes):
+def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mask, indexes, device):
     """
     Computes the Hartley transform through a spherical harmonics synthesis
     :param alm: torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     :param spherical_harmonics:torch.tensor(N_batch, side_shape**2, (l_max+1)**2)
     :param circular_mask: torch.tensor(N_pix**2), whether the frequencies are in the mask or not.
     :param radiuses_index: torch.tensor(side_shape**2) of alm index corresponding to the radius of that coordinate
+    :param device: torch device on which to perform the computations.
     :return: torch.tensor(N_batch, side_shape, side_shape)
     """
     #Here, the frequencies (0,0) gave NaN for the (l_max+1)**2 coefficients, except l = 0. We replace directly with the
@@ -182,7 +183,7 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mas
     spherical_harmonics[:, indexes ==0, :] = 0
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
-    flat_images = torch.zeros(batch_size, side_shape**2)
+    flat_images = torch.zeros(batch_size, side_shape**2, device=device)
     flat_images[:, circular_mask == 1] = images_radius_0_nan
     return flat_images.reshape(batch_size, side_shape, side_shape)
 
