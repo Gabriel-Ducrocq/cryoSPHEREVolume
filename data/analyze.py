@@ -19,9 +19,8 @@ import matplotlib.pyplot as plt
 
 
 def decode(yaml_setting_path, all_latent_variables, model_path):
-    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, 
-    scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf)= utils.parse_yaml(
-    yaml_setting_path)
+    vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
+    scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask = model.utils.parse_yaml(yaml_setting_path)
 
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
@@ -53,9 +52,8 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         for l in range((l_max+1)**2):
             linearInterpolator = interp.Interp1D(unique_radiuses, alms_per_radius[0, :, l],
                                                  method="linear", extrap=0.0)
-            alms_radiuses_volume_l = linearInterpolator(all_radiuses_volumes)
-            print("Interpolation problem number:", l)
-            print(alms_radiuses_volume_l.shape)
+            #We only interpolate the frequencies within the circular mask !
+            alms_radiuses_volume_l = linearInterpolator(all_radiuses_volumes[circular_mask.mask_volume ==1])
             alms_radiuses_volume.append(alms_radiuses_volume_l)
 
         del alms_per_radius
@@ -64,11 +62,15 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         torch.cuda.empty_cache()
         all_chunks_sph = []
         predicted_volume_hartley_flattened = []
-        for i in range(1000):
-            start = i*6859
-            end = i*6859 + 6859
-            print("all_coordinates shape", all_coordinates[start:end].shape)
-            all_sph = utils.get_real_spherical_harmonics(all_coordinates[start:end], sphericartObj, device, l_max)
+        total_number_freqs = torch.sum(circular_mask.mask_volume)
+        all_target_coordinates = all_coordinates[circular_mask.mask_volume]
+        n_iterations = total_number_freqs // 1000
+        assert n_iterations > 0, "There is not enough frequencies."
+        for i in range(1001):
+            start = i*total_number_freqs
+            end = i*total_number_freqs+ total_number_freqs
+            print("all_coordinates shape", all_target_coordinates[start:end].shape)
+            all_sph = utils.get_real_spherical_harmonics(all_target_coordinates[start:end], sphericartObj, device, l_max)
             all_sph = torch.cat(all_sph, dim=-1)
             print("SHAPESSSSSS AGAIN")
             print(all_sph.shape)
@@ -86,9 +88,11 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         ## I FEED THE RADIUSES DIRECTLY !
         #predicted_volume_hartley_flattened = torch.einsum("b s l, s l -> b s", alms_radiuses_volume, all_sph)
         predicted_volume_hartley_flattened[:, all_radiuses_volumes == 0.0] = 0
+        predicted_volume_hartley_flattened *= images_std
+        predicted_volume_hartley_flattened += images_mean
+        all_freqs_volume_hartley_flattened = torch.zeros_like(190*190*190)
+        all_freqs_volume_hartley_flattened[circular_mask.mask_volume == 1 ] = predicted_volume_hartley_flattened
         predicted_volume_hartley = predicted_volume_hartley_flattened.reshape(190, 190, 190)
-        predicted_volume_hartley *= images_std
-        predicted_volume_hartley += images_mean
         print("Hartley shape", predicted_volume_hartley.shape)
         predicted_volume_real = utils.hartley_transform_3d(predicted_volume_hartley[None, :, :])
         print("VOLUME SHAPE", predicted_volume_real.shape)

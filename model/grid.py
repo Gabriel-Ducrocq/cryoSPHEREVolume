@@ -56,6 +56,16 @@ class Mask(torch.nn.Module):
         mask = radiuses < self.radius/self.side_shape * extent
         self.register_buffer("mask", mask.to(device))
 
+        mx, my, mz = torch.meshgrid(ax, ax, ax, indexing="xy")
+        freqs_volume = torch.stack([mx.flatten(), my.flatten(), mz.flatten()], 1)
+        radiuses_volume = torch.sum(freqs_volume[:, :2]**2, axis=-1)
+        mask_volume = radiuses_volume < self.radius/self.side_shape * extent
+        self.register_buffer("mask_volume", mask_volume.to(device))
+
+
+
+
+
 
 
 
