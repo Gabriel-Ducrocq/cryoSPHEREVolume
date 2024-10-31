@@ -63,12 +63,13 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         all_chunks_sph = []
         predicted_volume_hartley_flattened = []
         total_number_freqs = torch.sum(circular_mask.mask_volume)
-        all_target_coordinates = all_coordinates[circular_mask.mask_volume]
+        print("Total number of freqs", total_number_freqs)
+        all_target_coordinates = all_coordinates[circular_mask.mask_volume == 1]
         n_iterations = total_number_freqs // 1000
         assert n_iterations > 0, "There is not enough frequencies."
         for i in range(1001):
             start = i*total_number_freqs
-            end = i*total_number_freqs+ total_number_freqs
+            end = i*total_number_freqs + total_number_freqs
             print("all_coordinates shape", all_target_coordinates[start:end].shape)
             all_sph = utils.get_real_spherical_harmonics(all_target_coordinates[start:end], sphericartObj, device, l_max)
             all_sph = torch.cat(all_sph, dim=-1)
