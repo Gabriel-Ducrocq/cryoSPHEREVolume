@@ -101,13 +101,19 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         del all_chunks_sph
         ## I FEED THE RADIUSES DIRECTLY !
         #predicted_volume_hartley_flattened = torch.einsum("b s l, s l -> b s", alms_radiuses_volume, all_sph)
-        predicted_volume_hartley_flattened[:, all_radiuses_volumes == 0.0] = 0
+        #Setting the value where the radiuses is 0 to 0
+        predicted_volume_hartley_flattened[:, all_radiuses_volumes[circular_mask.mask_volume ==1] == 0.0] = 0
+        #Reverting the standardization
         predicted_volume_hartley_flattened *= images_std
         predicted_volume_hartley_flattened += images_mean
+        #Initializing a volume to 0 so outside of the mask values will be null
         all_freqs_volume_hartley_flattened = torch.zeros_like(190*190*190)
+        #Setting the values within the mask to the predicted values.
         all_freqs_volume_hartley_flattened[circular_mask.mask_volume == 1 ] = predicted_volume_hartley_flattened
+        #Reshaping
         predicted_volume_hartley = predicted_volume_hartley_flattened.reshape(190, 190, 190)
         print("Hartley shape", predicted_volume_hartley.shape)
+        #Transforming from Hartley to real space.
         predicted_volume_real = utils.hartley_transform_3d(predicted_volume_hartley[None, :, :])
         print("VOLUME SHAPE", predicted_volume_real.shape)
         folder_experiment = "data/dataset/"
