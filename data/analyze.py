@@ -107,7 +107,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         predicted_volume_hartley_flattened *= images_std
         predicted_volume_hartley_flattened += images_mean
         #Initializing a volume to 0 so outside of the mask values will be null
-        all_freqs_volume_hartley_flattened = torch.zeros_like(190*190*190)
+        all_freqs_volume_hartley_flattened = torch.zeros(190*190*190)
         #Setting the values within the mask to the predicted values.
         all_freqs_volume_hartley_flattened[circular_mask.mask_volume == 1 ] = predicted_volume_hartley_flattened
         #Reshaping
