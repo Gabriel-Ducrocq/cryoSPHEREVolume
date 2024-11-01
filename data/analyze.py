@@ -40,36 +40,49 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
     vae = torch.load(model_path)
     vae.eval()
 
+    #All the frequencies in the volume
     all_coordinates = freqs_volume
+    #Computes all the radiuses of the frequencies
     all_radiuses_volumes = torch.sqrt(torch.sum(all_coordinates**2, dim=1))
 
+    #For each latent variable:
     for k, latent_variables in enumerate(all_latent_variables):
+        #Decode the latent variable
         latent_variables = latent_variables[None, :]
+        #alms_per_radius is (1, N_unique_radiuses, (lmax + 1)**2)
         alms_per_radius = vae.decode(latent_variables)
         #The next tensor is ((l_max+1)**2, N_coordinates)
         ## I transposed the alm per radius: it is of shape (N_unique_radiuses, (l_max+1)**2)
         alms_radiuses_volume = []
+        ##Now the problem is that alm_per_radius has the alms only for the radiuses seen during training. That is not enough for the volume reconstruction.
+        #We decide to interpolate, for each ell, the values for different radiuses.
         for l in range((l_max+1)**2):
+            #We set the observed values
             linearInterpolator = interp.Interp1D(unique_radiuses, alms_per_radius[0, :, l],
                                                  method="linear", extrap=0.0)
             #We only interpolate the frequencies within the circular mask !
             alms_radiuses_volume_l = linearInterpolator(all_radiuses_volumes[circular_mask.mask_volume ==1])
+            #We finally append the values of the radiuses for each ell
             alms_radiuses_volume.append(alms_radiuses_volume_l)
 
         del alms_per_radius
+        #We stack them so alm_radiuses_volume is (batch_size, (lmax + 1)**2, number of radiuses)
         alms_radiuses_volume = torch.stack(alms_radiuses_volume, dim=1)[None, :, :]
         print("COORDINSTES", all_coordinates.shape)
         torch.cuda.empty_cache()
         all_chunks_sph = []
         predicted_volume_hartley_flattened = []
+        #We get the total number of different frequencies within the mask
         total_number_freqs = torch.sum(circular_mask.mask_volume)
         print("Total number of freqs", total_number_freqs)
+        #We get only the coordinates within the mask
         all_target_coordinates = all_coordinates[circular_mask.mask_volume == 1]
+
         n_iterations = total_number_freqs // 1000
         assert n_iterations > 0, "There is not enough frequencies."
-        for i in range(1001):
-            start = i*total_number_freqs
-            end = i*total_number_freqs + total_number_freqs
+        for i in range(n_iterations + 1):
+            start = i*1000
+            end = i*1000 + 1000
             print("all_coordinates shape", all_target_coordinates[start:end].shape)
             all_sph = utils.get_real_spherical_harmonics(all_target_coordinates[start:end], sphericartObj, device, l_max)
             all_sph = torch.cat(all_sph, dim=-1)
