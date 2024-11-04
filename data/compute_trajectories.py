@@ -49,7 +49,7 @@ def compute_trajectories(experiment_yaml_path, models_path, images_list, epochs_
 
     batch_images = read_images(experiment_settings["particles_path"] + "particles.mrcs", images_list)
     for epoch in epochs_list:
-        output_epoch = output_path + f"epoch_{epoch}"
+        output_epoch = output_path + f"epoch_{epoch}/"
         if not os.path.exists(output_epoch):
             os.makedirs(output_epoch)
 
