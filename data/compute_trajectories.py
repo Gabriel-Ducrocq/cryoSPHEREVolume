@@ -30,7 +30,7 @@ def load_model(model_path):
 
 def read_images(images_path, list_interest):
     with mrcfile.open(images_path) as mrc:
-        images_interest = mrc.data(images_path)[list_interest]
+        images_interest = mrc.data[list_interest]
 
     return torch.tensor(images_interest, dtype=torch.float32, device=device)
 
