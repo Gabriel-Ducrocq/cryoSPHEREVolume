@@ -18,7 +18,7 @@ from pytorch3d.transforms import quaternion_to_axis_angle, quaternion_to_matrix
 import matplotlib.pyplot as plt
 
 
-def decode(yaml_setting_path, all_latent_variables, model_path):
+def decode(yaml_setting_path, all_latent_variables, model_path, output_path=None):
     vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask = utils.parse_yaml(yaml_setting_path)
 
@@ -120,8 +120,12 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
 
         print("ReHartley", utils.hartley_transform_3d(predicted_volume_real).flatten()[circular_mask.mask_volume == 0])
         print("TEST FINAL", torch.sum(torch.round(utils.hartley_transform_3d(predicted_volume_real).flatten()) == 0))
-        folder_experiment = "data/dataset/"
-        mrc.MRCFile.write(f"{folder_experiment}volume_{k}.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
+        if output_path is None:
+            folder_experiment = "data/dataset/"
+            mrc.MRCFile.write(f"{folder_experiment}volume_{k}.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
+        else:
+            mrc.MRCFile.write(output_path, predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
+
         del predicted_volume_real
 
 
