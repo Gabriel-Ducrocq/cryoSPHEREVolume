@@ -119,6 +119,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path):
         print("Hartley volume where mask is 0:", all_freqs_volume_hartley_flattened[circular_mask.mask_volume == 0])
 
         print("ReHartley", utils.hartley_transform_3d(predicted_volume_real).flatten()[circular_mask.mask_volume == 0])
+        print("TEST FINAL", torch.sum(torch.round(utils.hartley_transform_3d(predicted_volume_real).flatten() == 0)))
         folder_experiment = "data/dataset/"
         mrc.MRCFile.write(f"{folder_experiment}volume_{k}.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
         del predicted_volume_real
