@@ -64,10 +64,10 @@ def compute_trajectories(experiment_yaml, models_path, images_list, epochs_list,
 if __name__ == '__main__':
     parser_arg = argparse.ArgumentParser()
     parser_arg.add_argument('--experiment_yaml', type=str, required=True)
-    parser_arg.add_argument("--models_path", nargs='+', required=True)
-    parser_arg.add_argument("--epochs_list", type=list, required=True)
+    parser_arg.add_argument("--models_path", type=str, required=True)
+    parser_arg.add_argument("--epochs_list", nargs='+', required=True)
     parser_arg.add_argument("--images_list", nargs='+', required=True)
-    parser_arg.add_argument("--output_path", type=list, required=True)
+    parser_arg.add_argument("--output_path", type=str, required=True)
     args = parser_arg.parse_args()
     models_path = args.models_path
     experiment_yaml = args.experiment_yaml
