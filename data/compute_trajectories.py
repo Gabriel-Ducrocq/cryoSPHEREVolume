@@ -50,6 +50,7 @@ def compute_trajectories(experiment_yaml, models_path, images_list, epochs_list,
         os.makedirs(output_epoch)
         print("Epoch:", epoch)
         model = load_model(model_path + f"full_model{i}")
+        model.eval()
         latent_means = sample_latent(batch_images, model, images_mean, images_std)
         for i, latent_mean in enumerate(latent_means):
             decode(experiment_yaml, latent_mean[None, :], model_path, output_path=output_epoch + f"volume_{images_list[i]}.mrc")
