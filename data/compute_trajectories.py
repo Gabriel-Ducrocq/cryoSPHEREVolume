@@ -29,6 +29,7 @@ def load_model(model_path):
     return torch.load(model_path)
 
 def read_images(images_path, list_interest):
+    print(list_interest)
     with mrcfile.open(images_path) as mrc:
         images_interest = mrc.data[list_interest]
 
