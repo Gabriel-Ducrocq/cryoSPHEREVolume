@@ -1,4 +1,4 @@
-import mrc
+import mrcfile
 import numpy as np
 import yaml
 import os
@@ -28,9 +28,11 @@ def compute_mean_std(experiment_yaml):
 def load_model(model_path):
     return torch.load(model_path)
 
-def read_images(images_path, images_lit):
-    images_interest = mrc.read(images_path)[list_interest]
-    return torch.tensor(images_list, dtype=torch.float32, device=device)
+def read_images(images_path, list_interest):
+    with mrcfile.open(images_path) as mrc:
+        images_interest = mrc.data(images_path)[list_interest]
+
+    return torch.tensor(images_interest, dtype=torch.float32, device=device)
 
 def sample_latent(batch_images, model, images_mean, images_std):
     batch_images = batch_images.to(device)
