@@ -40,7 +40,7 @@ def sample_latent(batch_images, model, images_mean, images_std):
     batch_images = (batch_images - images_mean)/(images_std + 1e-15)
     flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
     latent_variables, latent_mean, latent_std = model.sample_latent(flattened_batch_images)
-    return latent_means
+    return latent_mean
 
 def compute_trajectories(experiment_yaml_path, models_path, images_list, epochs_list, output_path):
     images_mean, images_std = compute_mean_std(experiment_yaml_path)
