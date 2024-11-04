@@ -54,7 +54,7 @@ def compute_trajectories(experiment_yaml_path, models_path, images_list, epochs_
             os.makedirs(output_epoch)
 
         print("Epoch:", epoch)
-        model = load_model(models_path + f"full_model{i}")
+        model = load_model(models_path + f"full_model{epoch}")
         model.eval()
         latent_means = sample_latent(batch_images, model, images_mean, images_std)
         for i, latent_mean in enumerate(latent_means):
