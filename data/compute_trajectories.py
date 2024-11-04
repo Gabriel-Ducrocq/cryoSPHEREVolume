@@ -46,7 +46,7 @@ def compute_trajectories(experiment_yaml_path, models_path, images_list, epochs_
     with open(experiment_yaml_path, "r") as file:
         experiment_settings = yaml.safe_load(file)
 
-    batch_images = read_images(experiment_settings["particles_path"], images_list)
+    batch_images = read_images(experiment_settings["particles_path"] + "particlles.mrcs", images_list)
     for epoch in epochs_list:
         output_epoch = output_path + f"epoch_{epoch}"
         if not os.path.exists(output_epoch):
