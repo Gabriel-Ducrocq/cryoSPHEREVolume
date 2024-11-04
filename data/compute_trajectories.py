@@ -74,4 +74,4 @@ if __name__ == '__main__':
     epochs_list = args.epochs_list
     images_list = args.images_list
     output_path = args.output_path
-    analyze(experiment_yaml, models_path, images_list, epochs_list, output_path)
+    compute_trajectories(experiment_yaml, models_path, images_list, epochs_list, output_path)
