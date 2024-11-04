@@ -39,10 +39,10 @@ def sample_latent(batch_images, model, images_mean, images_std):
     latent_variables, latent_mean, latent_std = model.sample_latent(flattened_batch_images)
     return latent_means
 
-def compute_trajectories(experiment_yaml, models_path, images_list, epochs_list, output_path):
-    images_mean, images_std = compute_mean_std(experiment_yaml)
-    with open(path, "r") as file:
-        experiment_settings = yaml.safe_load(experiment_yaml)
+def compute_trajectories(experiment_yaml_path, models_path, images_list, epochs_list, output_path):
+    images_mean, images_std = compute_mean_std(experiment_yaml_path)
+    with open(experiment_yaml_path, "r") as file:
+        experiment_settings = yaml.safe_load(file)
 
     batch_images = read_images(experiment_settings["particles_path"], images_list)
     for epoch in epochs_list:
