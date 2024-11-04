@@ -47,7 +47,8 @@ def compute_trajectories(experiment_yaml, models_path, images_list, epochs_list,
     for epoch in epochs_list:
         output_epoch = output_path + f"epoch_{epoch}"
         if not os.path.exists(output_epoch):
-        os.makedirs(output_epoch)
+            os.makedirs(output_epoch)
+            
         print("Epoch:", epoch)
         model = load_model(model_path + f"full_model{i}")
         model.eval()
