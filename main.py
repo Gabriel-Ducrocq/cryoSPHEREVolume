@@ -98,7 +98,15 @@ def train(yaml_setting_path, debug_mode):
                     batch_predicted_images = predicted_images
             else:
                 poses_min, reconstruction_errors, batch_predicted_images = pose_search.perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, spherical_harmonics,
-                    experiment_settings, tracking_metrics, alms_per_coordinate, circular_mask, radius_indexes, ctf, use_ctf, grid_rotations, l_max, device, wigner_calculator, indexes)
+                    experiment_settings, tracking_metrics, alms_per_coordinate.detach(), circular_mask, radius_indexes, ctf, use_ctf, grid_rotations, l_max, device, wigner_calculator, indexes)
+                all_wigner = wigner_calculator.compute_wigner_D(l_max, poses_min, device)
+                rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
+                predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
+                if use_ctf:
+                    batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
+                else:
+                    batch_predicted_images = predicted_images
+
 
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
