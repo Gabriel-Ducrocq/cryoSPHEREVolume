@@ -36,4 +36,5 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 		poses_min[losses < reconstruction_errors] = batch_poses[losses < reconstruction_errors]
 		reconstruction_errors[losses < reconstruction_errors] = losses[losses < reconstruction_errors]
 		argmin_images[losses < reconstruction_errors] = batch_predicted_images[losses < reconstruction_errors]
-		return poses_min, reconstruction_errors, argmin_images
+		
+	return poses_min, reconstruction_errors, argmin_images
