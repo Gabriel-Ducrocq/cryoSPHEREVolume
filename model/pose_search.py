@@ -25,10 +25,20 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
 	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
 	for batch_poses in tqdm(poses):
+		start = time()
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1).to(device)
+		start_wignerd = time()
 		all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
+		end_wignerd = time()
+		print("Computing Wigner:", end_wignerd - start_wignerd)
+		start_apply = time()
 		rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
+		end_apply = time()
+		print("Applying Wigner D:", end_apply - start_apply)
+		start_predict_image = time()
 		predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
+		end_predicted_images = time()
+		print("Predicting images:", end_predicted_images - start_predict_image)
 		if use_ctf:
 		    batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
 		else:
@@ -39,5 +49,7 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 		poses_min[losses < reconstruction_errors] = batch_poses[losses < reconstruction_errors]
 		reconstruction_errors[losses < reconstruction_errors] = losses[losses < reconstruction_errors]
 		argmin_images[losses < reconstruction_errors] = batch_predicted_images[losses < reconstruction_errors]
+		end = time()
+		print("Total time:", end-start)
 
 	return poses_min, reconstruction_errors, argmin_images
