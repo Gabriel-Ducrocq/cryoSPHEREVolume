@@ -14,8 +14,8 @@ import utils
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def compute_mean_std(experiment_yaml):
-    (vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device,
-    scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask) = utils.parse_yaml(experiment_yaml)
+    vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask, grid_rotations  = utils.parse_yaml(experiment_yaml)
 
     data_loader_std = iter(DataLoader(dataset, batch_size=10000, shuffle=False, num_workers=4, drop_last=True))
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _) in enumerate(data_loader_std):
