@@ -14,7 +14,7 @@ from model.grid import Grid, rotate_grid
 
 
 def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, spherical_harmonics, experiment_settings, tracking_metrics, alms_per_coordinates, 
-	circular_mask, radius_indexes, ctf, use_ctf, poses, lmax, device):
+	circular_mask, radius_indexes, ctf, use_ctf, poses, lmax, device, wigner_calculator):
 	batch_size = latent_mean.shape[0]
 	npix = batch_translated_images_hartley.shape[-1]
 	reconstruction_errors = torch.ones(batch_size, dtype=torch.float32, device=device)*torch.inf
