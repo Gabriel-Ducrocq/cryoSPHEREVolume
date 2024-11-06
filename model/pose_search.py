@@ -13,6 +13,9 @@ from model.grid import Grid, rotate_grid
 
 
 
+
+
+
 def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, spherical_harmonics, experiment_settings, tracking_metrics, alms_per_coordinate, 
 	circular_mask, radius_indexes, ctf, use_ctf, poses, l_max, device, wigner_calculator, indexes):
 	batch_size = latent_mean.shape[0]
@@ -21,6 +24,8 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 	poses_min = torch.zeros(batch_size, 3, 3, dtype=torch.float32, device=device)
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
 	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
+	#TEST:
+	alms_per_coordinate = alms_per_coordinate = alms_per_coordinate.detach()
 	for i, batch_poses in tqdm(enumerate(poses)):
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1).to(device)
 		all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
