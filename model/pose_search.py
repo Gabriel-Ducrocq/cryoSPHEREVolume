@@ -14,7 +14,7 @@ from model.grid import Grid, rotate_grid
 
 
 def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, spherical_harmonics, experiment_settings, tracking_metrics, alms_per_coordinates, 
-	circular_mask, radius_indexes, ctf, use_ctf, poses, lmax, device, wigner_calculator):
+	circular_mask, radius_indexes, ctf, use_ctf, poses, l_max, device, wigner_calculator):
 	batch_size = latent_mean.shape[0]
 	npix = batch_translated_images_hartley.shape[-1]
 	reconstruction_errors = torch.ones(batch_size, dtype=torch.float32, device=device)*torch.inf
@@ -24,7 +24,6 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 	for i, batch_poses in tqdm(enumerate(poses)):
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1)
 		all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
-		#all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
 		rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
 		predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
 		if use_ctf:
