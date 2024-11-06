@@ -190,6 +190,8 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mas
     batch_size = alm_per_coord.shape[0]
     side_shape = int(np.sqrt(len(circular_mask)))
     spherical_harmonics[:, indexes ==0, :] = 0
+    print("ALMS PER COORD", alm_per_coord.shape)
+    print("SPH", spherical_harmonics.shape)
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
     flat_images = torch.zeros(batch_size, side_shape**2, device=device)
