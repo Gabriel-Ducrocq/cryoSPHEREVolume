@@ -12,6 +12,7 @@ import model.utils
 from tqdm import tqdm
 from time import time
 from torch.utils.data import DataLoader
+from model import pose_search
 
 parser_arg = argparse.ArgumentParser()
 parser_arg.add_argument('--experiment_yaml', type=str, required=True)
@@ -25,7 +26,7 @@ def train(yaml_setting_path, debug_mode):
     :return:
     """
     vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask = model.utils.parse_yaml(
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask, grid_rotations = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -80,18 +81,22 @@ def train(yaml_setting_path, debug_mode):
             alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
-            start_wigner = time()
-            all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
-            #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
-            end_wigner = time()
-            start_apply = time()
-            rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-            end_apply = time()
-            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
-            if use_ctf:
-                batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
+            if grid_rotations is None:
+                start_wigner = time()
+
+                all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
+                #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
+                end_wigner = time()
+                start_apply = time()
+                rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
+                end_apply = time()
+                predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
+                if use_ctf:
+                    batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
+                else:
+                    batch_predicted_images = predicted_images
             else:
-                batch_predicted_images = predicted_images
+                poses_min, reconstruction_errors, batch_predicted_images = pose_search.perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, experiment_settings, tracking_metrics, alms_per_coordinates, circular_mask, radius_indexes, ctf, use_ctf, poses, lmax, device)
 
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, latent_mean, latent_std, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])

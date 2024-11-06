@@ -118,9 +118,16 @@ def parse_yaml(path):
     wigner_calculator = WignerD(l_max, device)
     image_translator = SpatialGridTranslate(D=Npix_downsize, device=device)
 
+    grid_rotations = None
+    if experiment_settings["poses"] is not None:
+    #   Loading rotation poses from quaternions and set them as matrix:
+        grid_rotations = np.load(experiment_settings["poses"])
+        grid_rotations = scipy.spatial.transform.Rotation.from_quat(grid_rotations, scalar_first=True)
+        grid_rotations = torch.tensor(grid_rotations.as_matrix(), dtype=torch.float32, device=device)
+
 
     return vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf, circular_mask
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf, circular_mask, grid_rotations
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
