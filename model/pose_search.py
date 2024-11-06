@@ -22,7 +22,7 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
 	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
 	for i, batch_poses in tqdm(enumerate(poses)):
-		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1)
+		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1).to(device)
 		all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
 		rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
 		predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
@@ -36,5 +36,5 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 		poses_min[losses < reconstruction_errors] = batch_poses[losses < reconstruction_errors]
 		reconstruction_errors[losses < reconstruction_errors] = losses[losses < reconstruction_errors]
 		argmin_images[losses < reconstruction_errors] = batch_predicted_images[losses < reconstruction_errors]
-		
+
 	return poses_min, reconstruction_errors, argmin_images

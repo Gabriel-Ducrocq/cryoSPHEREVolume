@@ -125,7 +125,7 @@ def parse_yaml(path):
         #Loading rotation poses from quaternions and set them as matrix:
         grid_rotations = np.load(experiment_settings["poses"])
         grid_rotations = scipy.spatial.transform.Rotation.from_quat(grid_rotations[:, [1, 2, 3, 0]])
-        grid_rotations = torch.tensor(grid_rotations.as_matrix(), dtype=torch.float32, device=device)
+        grid_rotations = torch.tensor(grid_rotations.as_matrix(), dtype=torch.float32)
 
 
     return vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
