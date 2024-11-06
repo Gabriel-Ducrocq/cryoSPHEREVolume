@@ -20,7 +20,7 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 	reconstruction_errors = torch.ones(batch_size, dtype=torch.float32, device=device)*torch.inf
 	poses_min = torch.zeros(batch_size, 3, 3, dtype=torch.float32, device=device)
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
-	generated_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
+	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
 	for i, batch_poses in tqdm(enumerate(poses)):
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1)
 		all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
