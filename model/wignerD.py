@@ -117,11 +117,8 @@ class WignerD():
         alpha = alpha
         beta = beta
         gamma = gamma
-        start = time()
         for l in range(l_max+1):
             r_inter = self.wigner_D(l, alpha, beta, gamma)
             r.append(r_inter)
 
-        end = time()
-        print("Inside Wigner time", end - start)
         return r
