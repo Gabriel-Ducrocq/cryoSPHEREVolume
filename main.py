@@ -77,7 +77,8 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
 
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
-            #latent_variables = torch.zeros_like(latent_variables)
+            #### !!!!!!! SETTING THE LATENT VARIABLES TO 0 !!!!!!!!!!! #####
+            latent_variables = torch.zeros_like(latent_variables)
             alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)

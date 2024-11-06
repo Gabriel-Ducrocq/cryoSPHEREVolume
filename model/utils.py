@@ -120,7 +120,8 @@ def parse_yaml(path):
 
     grid_rotations = None
     if experiment_settings["poses"] is not None:
-    #   Loading rotation poses from quaternions and set them as matrix:
+        print("Perfoming pose search !")
+        #Loading rotation poses from quaternions and set them as matrix:
         grid_rotations = np.load(experiment_settings["poses"])
         grid_rotations = scipy.spatial.transform.Rotation.from_quat(grid_rotations, scalar_first=True)
         grid_rotations = torch.tensor(grid_rotations.as_matrix(), dtype=torch.float32, device=device)
