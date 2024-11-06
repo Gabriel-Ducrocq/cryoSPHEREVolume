@@ -19,6 +19,7 @@ import starfile
 import e3nn
 from time import time
 import pytorch3d
+import scipy
 
 
 def fourier2d_to_primal(fourier_images):
