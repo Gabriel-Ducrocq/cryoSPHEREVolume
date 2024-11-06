@@ -32,7 +32,7 @@ def perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std
 		    batch_predicted_images = predicted_images
 
 		#Instead of averaging over the batch dimension, we keep it to know which pose minimizes the reconstruction error for each pose.
-		losses = torch.mean((batch_translated_images_hartley - batch_predicted_image.flatten(start_dim=1, end_dim=2))**2, dim=-1)
+		losses = torch.mean((batch_translated_images_hartley - batch_predicted_images.flatten(start_dim=1, end_dim=2))**2, dim=-1)
 		poses_min[loss < reconstruction_errors] = batch_poses[loss < reconstruction_errors]
 		reconstruction_errors[loss < reconstruction_errors] = loss[loss < reconstruction_errors]
 		argmin_images[loss < reconstruction_errors] = batch_predicted_image[loss < reconstruction_errors]
