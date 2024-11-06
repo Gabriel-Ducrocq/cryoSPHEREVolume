@@ -78,7 +78,7 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    circular_mask = Mask(Npix_downsize, apix_downsize)
+    circular_mask = Mask(Npix_downsize, apix_downsize, radius = experiment_settings["mask_radius"])
 
     frequencies = Grid(Npix_downsize, apix_downsize, device)
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask, device)
