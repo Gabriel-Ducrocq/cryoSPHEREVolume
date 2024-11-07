@@ -110,7 +110,7 @@ class WignerD():
 
         :param l_max: int, l_max for the spherical harmonics
         :param R: torch.tensor(N_batch, 3, 3)
-        :return:
+        :return: list of torch.tensor(N_batch, 2l+1, 2l+1) of wigner D matrices for each l.
         """
         r = []
         alpha, beta, gamma = e3nn.o3.matrix_to_angles(R[:, [1, 2, 0], :][:, :, [1, 2, 0]])

@@ -53,6 +53,8 @@ def train(yaml_setting_path, debug_mode):
         images_mean = torch.mean(images_for_std).to(device)
         break
 
+    grid_wigner = precompute_wigner_D(wigner, calculator, poses, l_max, device="cpu")
+
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
@@ -78,8 +80,8 @@ def train(yaml_setting_path, debug_mode):
 
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
             #### !!!!!!! SETTING THE LATENT VARIABLES TO 0 !!!!!!!!!!! #####
-            #latent_variables = torch.zeros_like(latent_variables)
-            alms_per_radius = vae.decode(latent_variables)
+            latent_variables = torch.zeros_like(latent_variables)
+            #alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
             if grid_rotations is None:
@@ -97,7 +99,7 @@ def train(yaml_setting_path, debug_mode):
                 else:
                     batch_predicted_images = predicted_images
             else:
-                poses_min, reconstruction_errors, batch_predicted_images = pose_search.perform_pose_search(batch_translated_images_hartley, latent_mean, latent_std, spherical_harmonics,
+                poses_min, reconstruction_errors, batch_predicted_images = pose_search.perform_pose_search(batch_translated_images_hartley, grid_wigner, latent_mean, latent_std, spherical_harmonics,
                     experiment_settings, tracking_metrics, alms_per_coordinate.detach(), circular_mask, radius_indexes, ctf, use_ctf, grid_rotations, l_max, device, wigner_calculator, indexes)
                 all_wigner = wigner_calculator.compute_wigner_D(l_max, poses_min, device)
                 rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
