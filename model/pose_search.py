@@ -20,10 +20,9 @@ def precompute_wigner_D(wigner_calculator, poses, l_max, device="cpu"):
 	:param poses: torch.tensor(batch_size, 3, 3) rotation matrices corresponding to the poses.
 	"""
 	all_wigner = {}
-	print("POSES FIRST", poses[0])
-	for pose in poses:
+	for i, pose in enumerate(poses):
 		wigner_pose = wigner_calculator.compute_wigner_D(l_max, pose[None, :, :], device)
-		all_wigner[pose] = wigner_pose
+		all_wigner[i] = wigner_pose
 
 	return all_wigner
 
@@ -38,9 +37,8 @@ def perform_pose_search(batch_translated_images_hartley, grid_wigner, latent_mea
 	poses_min = torch.zeros(batch_size, 3, 3, dtype=torch.float32, device=device)
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
 	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
-	for batch_poses in tqdm(poses):
-		print("POSES SECOND", batch_poses)
-		all_wigner = grid_wigner[batch_poses]
+	for k, batch_poses in tqdm(enumerate(poses)):
+		all_wigner = grid_wigner[k]
 		start = time()
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1).to(device)
 		start_apply = time()
