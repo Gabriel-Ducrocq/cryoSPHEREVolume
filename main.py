@@ -12,7 +12,7 @@ import model.utils
 from tqdm import tqdm
 from time import time
 from torch.utils.data import DataLoader
-from model import pose_search
+from model import pose_search, precompute_wigner_D
 
 parser_arg = argparse.ArgumentParser()
 parser_arg.add_argument('--experiment_yaml', type=str, required=True)
