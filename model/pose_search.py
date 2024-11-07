@@ -14,7 +14,7 @@ from decorators import timing
 
 
 @timing
-def precompute_wigner_D(wigner, calculator, poses, l_max, device="cpu"):
+def precompute_wigner_D(wigner_calculator, poses, l_max, device="cpu"):
 	"""
 	This function pre compute the wigner D matrices for all the given poses, since it seems to be the most expensive step in the loop.
 	:param poses: torch.tensor(batch_size, 3, 3) rotation matrices corresponding to the poses.
