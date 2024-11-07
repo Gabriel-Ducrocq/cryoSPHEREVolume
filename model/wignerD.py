@@ -66,7 +66,7 @@ class WignerD():
         # 2. a contiguous tensor, regardless of what transpositions happened above
         return q.to(dtype=dtype, device=device, copy=True, memory_format=torch.contiguous_format)
 
-    def wigner_D(self, l, alpha, beta, gamma):
+    def wigner_D(self, l, alpha, beta, gamma, device):
         r"""Wigner D matrix representation of :math:`SO(3)`.
 
         It satisfies the following properties:
@@ -102,7 +102,7 @@ class WignerD():
         alpha = alpha[..., None, None] % (2 * torch.pi)
         beta = beta[..., None, None] % (2 * torch.pi)
         gamma = gamma[..., None, None] % (2 * torch.pi)
-        X = self.all_so3_generators[l]
+        X = self.all_so3_generators[l].to(device)
         return torch.matrix_exp(alpha * X[1]) @ torch.matrix_exp(beta * X[0]) @ torch.matrix_exp(gamma * X[1])
 
     def compute_wigner_D(self, l_max, R, device):
@@ -118,7 +118,7 @@ class WignerD():
         beta = beta
         gamma = gamma
         for l in range(l_max+1):
-            r_inter = self.wigner_D(l, alpha, beta, gamma)
+            r_inter = self.wigner_D(l, alpha, beta, gamma, device)
             r.append(r_inter)
 
         return r
