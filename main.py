@@ -12,7 +12,7 @@ import model.utils
 from tqdm import tqdm
 from time import time
 from torch.utils.data import DataLoader
-from model import pose_search, precompute_wigner_D
+from model import pose_search
 
 parser_arg = argparse.ArgumentParser()
 parser_arg.add_argument('--experiment_yaml', type=str, required=True)
@@ -53,7 +53,7 @@ def train(yaml_setting_path, debug_mode):
         images_mean = torch.mean(images_for_std).to(device)
         break
 
-    grid_wigner = precompute_wigner_D(wigner, calculator, poses, l_max, device="cpu")
+    grid_wigner = pose_search.precompute_wigner_D(wigner, calculator, poses, l_max, device="cpu")
 
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
