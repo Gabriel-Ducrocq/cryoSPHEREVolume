@@ -21,7 +21,7 @@ def precompute_wigner_D(wigner_calculator, poses, l_max, device="cpu"):
 	"""
 	all_wigner = {}
 	for i, pose in enumerate(poses):
-		wigner_pose = wigner_calculator.compute_wigner_D(l_max, pose[None, :, :], device)
+		wigner_pose = wigner_calculator.compute_wigner_D(l_max, pose[None, :, :].to(device), device)
 		all_wigner[i] = wigner_pose
 
 	return all_wigner
