@@ -81,7 +81,7 @@ def train(yaml_setting_path, debug_mode):
             latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
             #### !!!!!!! SETTING THE LATENT VARIABLES TO 0 !!!!!!!!!!! #####
             latent_variables = torch.zeros_like(latent_variables)
-            #alms_per_radius = vae.decode(latent_variables)
+            alms_per_radius = vae.decode(latent_variables)
             #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
             alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
             if grid_rotations is None:
