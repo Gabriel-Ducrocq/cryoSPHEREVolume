@@ -22,7 +22,7 @@ def precompute_wigner_D(wigner_calculator, poses, l_max, device="cpu"):
 	all_wigner = {}
 	for pose in poses:
 		wigner_pose = wigner_calculator.compute_wigner_D(l_max, pose[None, :, :], device)
-		all_wigner[pose] = all_wigner_pose
+		all_wigner[pose] = wigner_pose
 
 	return all_wigner
 
