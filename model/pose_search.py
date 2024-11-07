@@ -37,7 +37,7 @@ def perform_pose_search(batch_translated_images_hartley, grid_wigner, latent_mea
 	poses_min = torch.zeros(batch_size, 3, 3, dtype=torch.float32, device=device)
 	poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
 	argmin_images = torch.zeros(batch_size, int(np.sqrt(npix)), int(np.sqrt(npix)),  dtype=torch.float32, device=device)
-	for k, batch_poses in tqdm(enumerate(poses)):
+	for k, batch_poses in enumerate(tqdm(poses)):
 		all_wigner = grid_wigner[k]
 		start = time()
 		batch_poses = batch_poses[None, :, :].repeat(batch_size, 1, 1).to(device)
