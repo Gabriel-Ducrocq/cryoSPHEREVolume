@@ -61,20 +61,19 @@ class PoseSearch:
 		mask = self.mask.get_mask(k)
 		return images[:, mask]
 
-
-    def get_neighbor_so3(self, quat, s2i, s1i, res):
-        """
-        This function gets the 8 nearest neighbors on so(3) and caches the results for later use.
-        :param quat: torch.tensor(N_points, 4) of quaternions at the current points
-        :param s2i: np.array(N_points,) of indices of the current points on s2
-        :param s1i: np.array(N_points,) of indices of the current points on s1
-        :param res: integer, current resolution.
-        """
-        key = (int(s2i), int(s1i), int(res))
-        if key not in self._so3_neighbor_cache:
-            self._so3_neighbor_cache[key] = so3_grid.get_neighbor(quat, s2i, s1i, res)
-        # FIXME: will this cache get too big? maybe don't do it when res is too
-        return self._so3_neighbor_cache[key]
+	def get_neighbor_so3(self, quat, s2i, s1i, res):
+		"""
+		This function gets the 8 nearest neighbors on so(3) and caches the results for later use.
+		:param quat: torch.tensor(N_points, 4) of quaternions at the current points
+		:param s2i: np.array(N_points,) of indices of the current points on s2
+		:param s1i: np.array(N_points,) of indices of the current points on s1
+		:param res: integer, current resolution.
+		"""
+		key = (int(s2i), int(s1i), int(res))
+		if key not in self._so3_neighbor_cache:
+		    self._so3_neighbor_cache[key] = so3_grid.get_neighbor(quat, s2i, s1i, res)
+		# FIXME: will this cache get too big? maybe don't do it when res is too
+		return self._so3_neighbor_cache[key]
 
 	def subdivide(self, quat, q_ind, cur_res)
         """
