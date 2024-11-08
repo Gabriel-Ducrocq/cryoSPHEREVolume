@@ -75,7 +75,7 @@ class PoseSearch:
 		# FIXME: will this cache get too big? maybe don't do it when res is too
 		return self._so3_neighbor_cache[key]
 
-	def subdivide(self, quat, q_ind, cur_res)
+	def subdivide(self, quat, q_ind, cur_res):
         """
         Subdivides poses for next resolution level
 
