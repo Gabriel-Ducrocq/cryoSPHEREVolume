@@ -32,6 +32,17 @@ def fourier2d_to_primal(fourier_images):
     r = torch.fft.fftshift(torch.fft.ifft2(f, dim=(-2, -1), s=(f.shape[-2], f.shape[-1])),dim=(-2, -1)).real
     return r
 
+
+def primal_to_fourier2d(images):
+    """
+    Computes the inverse fourier transform
+    fourier_images: torch.tensor(batch_size, N_pix, N_pix)
+    return: torch.tensor(batch_size, N_pix, N_pix) images in real space
+    """
+    f = torch.fft.ifftshift(images, dim=(-2, -1))
+    r = torch.fft.fftshift(torch.fft.fft2(f, dim=(-2, -1), s=(f.shape[-2], f.shape[-1])),dim=(-2, -1)).real
+    return r
+
 def get_radius_indexes(freqs, circular_mask, device):
     """
     Link the index of the unique indexes to the corresponding frequencies

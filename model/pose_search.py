@@ -76,7 +76,7 @@ class PoseSearch:
         # FIXME: will this cache get too big? maybe don't do it when res is too
         return self._so3_neighbor_cache[key]
 
-	def subdivide(self, quat: np.ndarray, q_ind: np.ndarray, cur_res: int) -> Tuple[np.ndarray, np.ndarray, torch.Tensor]:
+	def subdivide(self, quat, q_ind, cur_res)
         """
         Subdivides poses for next resolution level
 
@@ -113,24 +113,70 @@ class PoseSearch:
 
         return quat, q_ind, rot
 
+    def replace_wigner(argmin_wigner, wigner, losses_lb, reconstruction_errors, l_max):
+    	"""
+		This functions takes replaces the batch_dimensions of argmin_wigner with the one of wigner, only on the samples where losses_lb < reconstruction_errors
+		:param reconstruction_errors: torch.tensor(batch_size, ) of the lowest error so far.
+    	"""
+    	for ell in range((l_max+1)**2):
+    		argmin_wigner[ell][losses_lb < reconstruction_errors] = wigner[ell][losses_lb < reconstruction_errors]
+
     def search(alms_per_coordinate, true_images, spherical_harmonics, l_max, device, radius_indexes, ctf):
     	"""
     	Perform the pose search with frequency marching
     	:param alms_per_coordinate: torch.tensor(batch_size, N_pixels_in_mask, (l_max+1)**2)
+    	:param true_images: torch.tensor(batch_size, side_shape**2) of true, translated images, expressed in Hartley space.
 		"""
 		batch_size = true_images.shape[0]
+		batch_indexes = torch.arange(batch_size)
 		for n_it in range(1, self.total_iter+1):
 			resol = self.base_resol + (n_it -1) #n_it start at 1 but we want our resol to start at 1
 			k = self.get_frequency_limit(n_it)
-			assert resol in self.all_wigner, "resolution"
 			all_wigners = self.all_wigner[resol]
-			mask = self.mask.get_mask(k)
-			rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-			predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, mask, radius_indexes, device)
+			mask_freq = self.mask.get_mask(k)
+			mask_freq_max = self.mask.get(self.kmax)
+			reconstruction_errors = torch.ones(batch_size, len(all_wigner), dtype=torch.float32, device=device)*torch.inf
+			poses = torch.zeros(batch_size, len(all_wigner), dtype=torch.float32, device=device)
+
+			poses_min = torch.zeros(batch_size, 3, 3, dtype=torch.float32, device=device)
+			poses_min[:, 0, 0] = poses_min[:, 1, 1] = poses_min[:, 2, 2] = 1
+
+			minimizing_wigner = [torch.zeros(batch_size, 2*l+1, 2*l+1, dtype=torch.float32, device = device) for l in range((l_max+1)**2)]
+			for so3_index, wigner in all_wigner.items():
+				rotated_spherical_harmonics = utils.apply_wigner_D(wigner, spherical_harmonics, l_max)
+				#I can just compute the images at maximum frequency and then mask them with current k, no need to compute them twice.
+				predicted_images_freq_max = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, mask_freq_max, radius_indexes, device)
+				if use_ctf:
+			    	batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
+				else:
+			    	batch_predicted_images = predicted_images
+
+			    batch_predicted_images = batch_predicted_images.flatten(start_dim=1, end_dim=2)
+			    losses_lb = torch.mean((true_images[:, mask==1] - batch_predicted_images[:, mask==1])**2, dim=-1)
+			    replace_wigner(argmin_wigner, wigner, losses_lb, torch.min(reconstruction_errors)[0])
+			    reconstruction_errors[:, i] = losses_lb
+			    poses[:, i] = so3_index
+
+			#We get the argmin of the errors, which gives the so3_indexes minimizing this error. Through the loop we also obtained the wigner minimizing the error for each batch. 
+			temp_minimizing_indexes = torch.argmin(reconstruction_errors, dim=-1)
+			minimizing_so3_indexes = poses[batch_indexes, temp_minimizing_indexes]
+			minimizing_error = torch.argmin(reconstruction_errors, dim=-1)[0]
+
+			#We now compute the upper bound in the minimizing so3 elements.
+			rotated_spherical_harmonics = utils.apply_wigner_D(argmin_wigner, spherical_harmonics, l_max)
+			#I can just compute the images at maximum frequency and then mask them with current k, no need to compute them twice.
+			predicted_images_freq_max = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, mask_freq_max, radius_indexes, device)
 			if use_ctf:
 		    	batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
 			else:
 		    	batch_predicted_images = predicted_images
+
+			losses_up = torch.mean((true_images[:, mask_freq_max==1] - batch_predicted_images[:, mask_freq_max==1])**2, dim=-1)
+			lb_inferior_up = losses_lb < losses_up
+			#We now get all the poses to subdivide
+			poses_to_subdivide = set(poses[lb_inferior_up].detach().numpy().flatten())
+
+
 
 
 
