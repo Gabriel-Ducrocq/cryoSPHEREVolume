@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def rotate_grid(rotation_matrices, grid):
@@ -10,6 +11,7 @@ def rotate_grid(rotation_matrices, grid):
     :return: torch.tensor(N_batch, side_shape**2, 3) of rotated frequencies
     """
     return torch.einsum("b k q, s q -> b s k", rotation_matrices, grid)
+
 class Grid(torch.nn.Module):
     """
     Class describing the ctf, built from starfile
@@ -49,18 +51,40 @@ class Mask(torch.nn.Module):
         self.side_shape = side_shape
         self.apix = apix
         ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))
-        extent = np.abs(ax[0])
+        self.extent = np.abs(ax[0])
         mx, my = torch.meshgrid(ax, ax, indexing="xy")
-        freqs = torch.stack([mx.flatten(), my.flatten(), torch.zeros(side_shape**2, dtype=torch.float32)], 1)
-        radiuses = torch.sum(freqs[:, :2]**2, axis=-1)
-        mask = radiuses < self.radius/self.side_shape * extent
+        self.freqs = torch.stack([mx.flatten(), my.flatten(), torch.zeros(side_shape**2, dtype=torch.float32)], 1)
+        self.freq_radiuses = torch.sqrt(torch.sum(self.freqs[:, :2]**2, axis=-1))
+        mask = self.freq_radiuses < self.radius/(self.side_shape//2) * self.extent
         self.register_buffer("mask", mask.to(device))
 
         mx, my, mz = torch.meshgrid(ax, ax, ax, indexing="xy")
         freqs_volume = torch.stack([mx.flatten(), my.flatten(), mz.flatten()], 1)
-        radiuses_volume = torch.sum(freqs_volume[:, :2]**2, axis=-1)
-        mask_volume = radiuses_volume < self.radius/self.side_shape * extent
+        radiuses_volume = torch.sqrt(torch.sum(freqs_volume[:, :2]**2, axis=-1))
+        mask_volume = radiuses_volume < self.radius/(self.side_shape//2) * self.extent
         self.register_buffer("mask_volume", mask_volume.to(device))
+
+        self.masks_2d = {}
+
+    def get_mask(self, radius):
+        if radius in self.masks_2d:
+            return self.masks_2d[radius]
+
+        assert 2*radius + 1 < self.side_shape, f"Mask with radius {radius} is too large for image of size {self.side_shape}x{self.side_shape}."
+        mask = self.freq_radiuses < radius/(self.side_shape//2) * self.extent
+        self.masks_2d[radius] = mask
+        return mask
+
+    def plot_mask(self, radius):
+        if radius in self.masks_2d:
+            mask = self.masks_2d[radius]
+        else:
+            mask = self.get_mask(radius)
+
+        mask = mask.reshape(self.side_shape, self.side_shape)
+        plt.imshow(mask)
+        plt.show()
+
 
 
 
