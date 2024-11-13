@@ -53,7 +53,7 @@ def get_radius_indexes(freqs, circular_mask, device):
     #Computes the radius in Fourier space:
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     #Get the radius within the mask.
-    radius_within_mask = radius[circular_mask.mask==1]
+    radius_within_mask = radius[circular_mask==1]
     #Get the unique radiuses in the images within the mask
     unique_radius = torch.unique(radius_within_mask, sorted=True)
     #Creates one index per unique radius
@@ -92,7 +92,7 @@ def parse_yaml(path):
     circular_mask = Mask(Npix_downsize, apix_downsize, radius = experiment_settings["mask_radius"])
 
     frequencies = Grid(Npix_downsize, apix_downsize, device)
-    radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask, device)
+    radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask.get_mask(experiment_settings["mask_radius"]), device)
     N_unique_radiuses = len(unique_radiuses)
 
     encoder = MLP(Npix_downsize**2,
@@ -201,8 +201,6 @@ def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mas
     batch_size = alm_per_coord.shape[0]
     side_shape = int(np.sqrt(len(circular_mask)))
     spherical_harmonics[:, indexes ==0, :] = 0
-    print("ALMS PER COORD", alm_per_coord.shape)
-    print("SPH", spherical_harmonics.shape)
     images_radius_0_nan = torch.einsum("b s l, b s l -> b s", alm_per_coord, spherical_harmonics)
     images_radius_0_nan[:, indexes == 0] = alm_per_coord[:, indexes == 0, 0]
     flat_images = torch.zeros(batch_size, side_shape**2, device=device)
@@ -385,7 +383,7 @@ def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     :param lmax:
     :param wigner_matrices:
     :param spherical_harmonics: (batch_size, s**2, (l_max + 1)**2)
-    :return:
+    :return: torch.tensor(batch_size, s**2, (l_max + 1)**2)
     """
     res = []
     for l in range(l_max+1):

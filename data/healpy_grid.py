@@ -2,7 +2,15 @@ import json
 import argparse
 import healpy
 import numpy as np
+from scipy.spatial.transform import Rotation
 
+
+def quaternions_to_matrix(quaternions):
+    """
+    Converts quaternions to rotation matrices. The scipy function from_quat normalizes the quaternions internally.
+    :param quaternions: np.array(N_points, 4)
+    """
+    return Rotation.from_quat(quaternions).as_matrix()
 
 
 def get_s2_neighbor(mini, cur_res):
@@ -68,6 +76,7 @@ def get_so3_neighbours(pixel_indices, current_resolution, n_neighb=8):
     """
     This function takes a set of pixels and gives back the indices of the closest n_neighb in the next subdivision of the so3 grid.
     """
+
 
 
 def compute_healpix_grid(Nside):
