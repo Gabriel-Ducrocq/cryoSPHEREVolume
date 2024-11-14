@@ -243,7 +243,7 @@ class PoseSearch:
 		#########      BE CAREFUL I AM NOT APPLYING ANY CTF HERE !!!!!!!!!!! ##########
 		losses = torch.mean((true_images[:, mask_freq==1].repeat_interleave(n_so3_points, dim=0) - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
 		batch_number, rotation_to_keep, max_poses = keep_matrix_simpler(losses, self.max_poses) # [batch_size*self.max_poses*8,], [batch_size*self.max_poses*8,]
-		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number, rotation_to_keep] #tensor of shape [batch_size*n_so3_points, 4]
+		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number.to(device), rotation_to_keep.to(device)] #tensor of shape [batch_size*n_so3_points, 4]
 		keep_ind = grid_idx.reshape(batch_size, -1, 2)[batch_number, rotation_to_keep] # tensor of shape [batch_size*n_so3_points, 2]
 		return keep_ind, keep_quat, rotation_to_keep, losses, max_poses
 
