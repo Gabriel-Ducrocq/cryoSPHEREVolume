@@ -302,7 +302,7 @@ sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 #Computing the spherical harmonics.
 spherical_harmonics = utils.get_real_spherical_harmonics(frequencies.freqs[circular_mask.mask ==1], sh, "cpu", l_max)
 #Sampling alms to create the images
-alms_per_coordinate = torch.randn(N_images, 190**2, (l_max+1)**2, dtype=torch.float32)
+alms_per_coordinate = torch.randn(N_images, 190**2, (l_max+1)**2, dtype=torch.float32, device=device)
 #alms_per_coordinate[1] = alms_per_coordinate[0]
 #Setting the frequencies outside the small mask to 0
 alms_per_coordinate[:, circular_mask.get_mask(kmin) != 1] = 0
