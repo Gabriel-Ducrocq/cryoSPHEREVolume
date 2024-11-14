@@ -52,6 +52,7 @@ def get_radius_indexes(freqs, circular_mask, device):
     :param circular_mask: object of class Mask.
     :return: torch.tensor(side_shape**2)
     """
+    print("FREQ DEVICE:", freqs.device)
     #Computes the radius in Fourier space:
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     #Get the radius within the mask.
