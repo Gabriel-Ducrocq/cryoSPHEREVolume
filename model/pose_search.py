@@ -291,7 +291,6 @@ l_max = 5
 N_images = 10
 elts = [50, 313, 200, 3, 5, 500, 315]
 elts = np.random.randint(low = 0, high=576, size=(N_images, )).tolist()
-device="cpu"
 frequencies = grid.Grid(190, 1.0, "cpu")
 wigner_calculator = WignerD(l_max, device="cpu")
 #with open("data/dataset/1_resol.json", "r") as f:
