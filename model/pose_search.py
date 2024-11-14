@@ -97,7 +97,7 @@ def keep_matrix_simpler(loss, max_poses):
 
 	batch_number, rotation_to_keep = (loss <= top_k_val).nonzero(as_tuple=True) # [batch_size*max_poses,], [batch_size*max_poses,]
 	print("NUmber of k lowest values:", torch.sum(loss <= top_k_val, dim=-1))
-	return batch_number, rotation_to_keep, max_top_k_values
+	return batch_number.cpu().numpy(), rotation_to_keep, max_top_k_values.cpu().numpy()
 
 
 class PoseSearch:
@@ -243,10 +243,7 @@ class PoseSearch:
 		#########      BE CAREFUL I AM NOT APPLYING ANY CTF HERE !!!!!!!!!!! ##########
 		losses = torch.mean((true_images[:, mask_freq==1].repeat_interleave(n_so3_points, dim=0) - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
 		batch_number, rotation_to_keep, max_poses = keep_matrix_simpler(losses, self.max_poses) # [batch_size*self.max_poses*8,], [batch_size*self.max_poses*8,]
-		print(grid_quat.device)
-		print(batch_number.device)
-		print(rotation_to_keep.device)
-		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number.to(device), rotation_to_keep.to(device)] #tensor of shape [batch_size*n_so3_points, 4]
+		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number, rotation_to_keep] #tensor of shape [batch_size*n_so3_points, 4]
 		keep_ind = grid_idx.reshape(batch_size, -1, 2)[batch_number, rotation_to_keep] # tensor of shape [batch_size*n_so3_points, 2]
 		return keep_ind, keep_quat, rotation_to_keep, losses, max_poses
 
@@ -261,7 +258,7 @@ class PoseSearch:
 		batch_size = true_images.shape[0]
 		n_so3_points = len(self.all_wigner_base[0]) #number of points in the base grid of SO(3)
 		base_grid_q = self.base_quaternions[None, :, :].repeat(batch_size, axis=0) #shape [batch_size, N_points_base_grid, 4] np.array
-		base_grid_idx = self.base_grid_idx[None, :, :].repeat(batch_size, axis=0) #shape [batch_size, N_points_base_grid, 2] for coordinates on s2 and s1
+		base_grid_idx = self.base_grid_idx[None, :, :].repeat(batch_size, axis=0) #shape [batch_size, N_points_base_grid, 2] for coordinates on s2 and s1, np.array
 		all_wigner = self.all_wigner_base # list of tensot (n_so3_points_in_base_grid, 2l+1, 2l+1)
 		for n_iter in range(0, self.total_iter+1):
 			start = time()
