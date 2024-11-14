@@ -179,9 +179,9 @@ class PoseSearch:
 		"""
 		nq = quat.shape[0]
 
-		new_s2_coordinates, new_s2_ind = healpy_grid.get_s2_neighbor_tensor(q_ind[:, 0].detach().cpu().numpy().as_type(int), res)
+		new_s2_coordinates, new_s2_ind = healpy_grid.get_s2_neighbor_tensor(q_ind[:, 0].detach().cpu().numpy().astype(int), res)
 		theta, phi = new_s2_coordinates
-		psi, new_s1_ind = healpy_grid.get_s1_neighbor_tensor(q_ind[:, 1].detach().cpu().numpy().as_type(int), res)
+		psi, new_s1_ind = healpy_grid.get_s1_neighbor_tensor(q_ind[:, 1].detach().cpu().numpy().astype(int), res)
 		quat_new = healpy_grid.hopf_to_quat_tensor(
 		np.repeat(theta[..., None], psi.shape[-1], axis=-1).reshape(nq, -1),
 		np.repeat(phi[..., None], psi.shape[-1], axis=-1).reshape(nq, -1),
