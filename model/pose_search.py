@@ -214,14 +214,11 @@ class PoseSearch:
 		"""
 		batch_size = alms_per_coordinate.shape[0]
 		###########       I can surely make the next line faster by conidering only k_min instead of the circular mask defined in utils !!!!! ######
-		print("ON GPU WIGNER ?", all_wigner[1].device)
-		print("ON GPU SPH ?", spherical_harmonics[1].device)
-		print("ON GPU ALMs ?", alms_per_coordinate.device)
 		rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max) # [N_points_base_grid, N_pixels_in_mask, (lmax+1)**2] Get the rotated sph for each of the base grid points
 		if k == self.kmin:
 			rotated_spherical_harmonics = rotated_spherical_harmonics.repeat(batch_size, 1, 1) # [batch_size*N_points_base_grid, N_pixels_in_mask, (lmax+1)**2]
 
-		mask_freq = self.mask.get_mask(k) #We define a new mask corresponding to kmin
+		mask_freq = self.mask.get_mask(k).to(self.device) #We define a new mask corresponding to kmin
 		mask_freq_in_circular_mask = mask_freq[self.circular_mask == 1] #We get the elements of the mask of kmin that should be included in the mask defined at the start of the run
 		radius_indexes, unique_radiuses = utils.get_radius_indexes(self.frequencies.freqs, mask_freq, self.device) #We get all the unique radiuses in kmin and their indexes
 		batch_predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1].repeat_interleave(n_so3_points, dim=0), 
