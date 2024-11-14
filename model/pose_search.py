@@ -178,6 +178,7 @@ class PoseSearch:
 		return torch.tensor(nq, 8, 4) of quaternions in the new points, torch.tensor(nq, 8, 2) of the indexes of the points on SO(3)
 		"""
 		nq = quat.shape[0]
+		print("Q_IND", q_ind)
 		new_s2_coordinates, new_s2_ind = healpy_grid.get_s2_neighbor_tensor(q_ind[:, 0], res)
 		theta, phi = new_s2_coordinates
 		psi, new_s1_ind = healpy_grid.get_s1_neighbor_tensor(q_ind[:, 1], res)

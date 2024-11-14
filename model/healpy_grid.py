@@ -29,11 +29,11 @@ def get_s2_neighbor_tensor(mini, cur_res):
 
     mini: [nq] np array of the current location on SO(2)
 
-    output: [2, nq, 4] (np.array) tensor containing for each original point the angles corresponding to its children in angles as first dimensions, [nq, 4] (np.array) of new indices
+    output: [2, nq, 4] (np.array) containing for each original point the angles corresponding to its children in angles as first dimensions, [nq, 4] (np.array) of new indices
     """
     n_side = 2 ** (cur_res + 1)
     #Since we use a nested scheme for healpix, each grid point is divided into 4 points.
-    ind = np.arange(4) + 4 * mini[..., None].cpu().numpy()
+    ind = np.arange(4) + 4 * mini[..., None]
     return pix2ang_tensor(n_side, ind, nest=True), ind
 
 
