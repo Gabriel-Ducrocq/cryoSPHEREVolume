@@ -97,7 +97,7 @@ def keep_matrix_simpler(loss, max_poses):
 
 	batch_number, rotation_to_keep = (loss <= top_k_val).nonzero(as_tuple=True) # [batch_size*max_poses,], [batch_size*max_poses,]
 	print("NUmber of k lowest values:", torch.sum(loss <= top_k_val, dim=-1))
-	return batch_number.cpu().numpy(), rotation_to_keep, max_top_k_values.cpu().numpy()
+	return batch_number.cpu().numpy(), rotation_to_keep.cpu().numpy(), max_top_k_values.cpu().numpy()
 
 
 class PoseSearch:
