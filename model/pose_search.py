@@ -117,7 +117,7 @@ class PoseSearch:
 		self.mask = Mask(npix, apix)
 		self._so3_neighbor_cache = {}
 		self.base_grid_rot_mat = torch.tensor(scipy.spatial.transform.Rotation.from_quat(base_grid["quat"][:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32, device=device)
-		self.all_wigner_base = precompute_wigner_D(wigner_calculator, self.base_grid_rot_mat, self.l_max)
+		self.all_wigner_base = precompute_wigner_D(wigner_calculator, self.base_grid_rot_mat, self.l_max, device)
 		self.base_quaternions = base_grid["quat"]
 		self.max_poses = max_poses
 		self.neighbors = n_neighbors
@@ -326,7 +326,7 @@ if False:
 	#Get the rotation matrices of these poses
 	rot_mat_poses = torch.tensor(scipy.spatial.transform.Rotation.from_quat(quat_poses[:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32)
 	#Compute the corresponding Wigner matrices
-	wigner_poses = precompute_wigner_D(wigner_calculator, rot_mat_poses, l_max)
+	wigner_poses = precompute_wigner_D(wigner_calculator, rot_mat_poses, l_max, device=device)
 	#Rotate the spherical harmonics
 	poses_spherical_harmonics = utils.apply_wigner_D(wigner_poses, spherical_harmonics, l_max)
 	true_images = utils.spherical_synthesis_hartley(alms_per_coordinate, poses_spherical_harmonics, circular_mask.mask, radius_indexes, device)
@@ -341,7 +341,7 @@ else:
 	print(pose_search.base_grid_rot_mat[elts].shape)
 	#rot_mat_poses = torch.tensor(scipy.spatial.transform.Rotation.from_quat(pose_search.base_grid_rot_mat[elts][:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32)
 	rot_mat_poses = pose_search.base_grid_rot_mat[elts]
-	wigner_poses = precompute_wigner_D(wigner_calculator, rot_mat_poses, l_max)
+	wigner_poses = precompute_wigner_D(wigner_calculator, rot_mat_poses, l_max, device=device)
 	print(wigner_poses[0].device)
 	print(spherical_harmonics[0].device)
 	poses_spherical_harmonics = utils.apply_wigner_D(wigner_poses, spherical_harmonics, l_max)
