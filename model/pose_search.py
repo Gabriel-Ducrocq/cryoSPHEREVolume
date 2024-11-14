@@ -298,7 +298,7 @@ wigner_calculator = WignerD(l_max, device=device)
 
  
 base_grid = {"quat":np.load("data/dataset/1_resol_quat.npy"), "ind":np.load("data/dataset/1_resol_ind.npy"), "resol":1}
-circular_mask = Mask(190, 1.0, radius = 95)
+circular_mask = Mask(190, 1.0, radius = 95, device=device)
 #Getting the spherical harmonics object.
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 #Computing the spherical harmonics.
