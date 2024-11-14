@@ -20,6 +20,7 @@ import e3nn
 from time import time
 import pytorch3d
 import scipy
+from decorators import timing
 
 
 def fourier2d_to_primal(fourier_images):
@@ -43,6 +44,7 @@ def primal_to_fourier2d(images):
     r = torch.fft.fftshift(torch.fft.fft2(f, dim=(-2, -1), s=(f.shape[-2], f.shape[-1])),dim=(-2, -1)).real
     return r
 
+@timing
 def get_radius_indexes(freqs, circular_mask, device):
     """
     Link the index of the unique indexes to the corresponding frequencies
@@ -186,6 +188,7 @@ def alm_from_radius_to_coordinate(alm, radiuses_index):
     """
     return alm[:, radiuses_index, :]
 
+@timing
 def spherical_synthesis_hartley(alm_per_coord, spherical_harmonics, circular_mask, indexes, device):
     """
     Computes the Hartley transform through a spherical harmonics synthesis
@@ -377,6 +380,7 @@ def compute_wigner_D(l_max, R, device):
     print("Inside Wigner time", end - start)
     return r
 
+@timing
 def apply_wigner_D(wigner_matrices, spherical_harmonics, l_max):
     """
 
