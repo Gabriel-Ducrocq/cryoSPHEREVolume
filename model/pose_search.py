@@ -291,8 +291,8 @@ l_max = 5
 N_images = 10
 elts = [50, 313, 200, 3, 5, 500, 315]
 elts = np.random.randint(low = 0, high=576, size=(N_images, )).tolist()
-frequencies = grid.Grid(190, 1.0, "cpu")
-wigner_calculator = WignerD(l_max, device="cpu")
+frequencies = grid.Grid(190, 1.0, device)
+wigner_calculator = WignerD(l_max, device=device)
 #with open("data/dataset/1_resol.json", "r") as f:
 #	base_grid = json.load(f)
 
@@ -302,7 +302,7 @@ circular_mask = Mask(190, 1.0, radius = 95)
 #Getting the spherical harmonics object.
 sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
 #Computing the spherical harmonics.
-spherical_harmonics = utils.get_real_spherical_harmonics(frequencies.freqs[circular_mask.mask ==1], sh, "cpu", l_max)
+spherical_harmonics = utils.get_real_spherical_harmonics(frequencies.freqs[circular_mask.mask ==1], sh, device, l_max)
 #Sampling alms to create the images
 alms_per_coordinate = torch.randn(N_images, 190**2, (l_max+1)**2, dtype=torch.float32, device=device)
 #alms_per_coordinate[1] = alms_per_coordinate[0]
@@ -311,7 +311,7 @@ alms_per_coordinate[:, circular_mask.get_mask(kmin) != 1] = 0
 #Keeping only the big mask
 alms_per_coordinate = alms_per_coordinate[:, circular_mask.mask ==1] 
 #Setting the alms outside of the smallest mask to 0, so we can limit ourselves to 1 iteration.
-radius_indexes, unique_radiuses = utils.get_radius_indexes(frequencies.freqs, circular_mask.mask , "cpu")
+radius_indexes, unique_radiuses = utils.get_radius_indexes(frequencies.freqs, circular_mask.mask , device)
 N_unique_radiuses = len(unique_radiuses)
 #Get the quaternions of some poses
 quat_poses = base_grid["quat"][elts]
