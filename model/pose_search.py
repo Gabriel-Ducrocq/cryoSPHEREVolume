@@ -168,7 +168,7 @@ class PoseSearch:
 		"""
 		return healpy_grid.get_neighbor_tensor(quat, q_ind, res, device)
 
-
+	@timing
 	def subdivide(self, quat, q_ind, res):
 		"""
 		Subdivide the SO(3) grid in the points that we keep.
@@ -201,7 +201,7 @@ class PoseSearch:
 		ind_out = ind_new[torch.arange(nq)[..., None], ii] #Get the corresponding SO(3) indexes.
 		return quat_out, ind_out
 
-
+	@timing
 	def evaluate_images(self, alms_per_coordinates, all_wigner, spherical_harmomics, k, n_so3_points):
 		"""
 		Evaluates the images for a set of rotation and a given alms
@@ -227,6 +227,7 @@ class PoseSearch:
 
 		return batch_predicted_images
 
+	@timing
 	def get_indices_to_keep(self, true_images, batch_predicted_images, grid_quat, grid_idx, k):
 		"""
 		:param true_images: torch.tensor(batch_size, n_pix**2)
