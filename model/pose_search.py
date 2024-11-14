@@ -342,6 +342,8 @@ else:
 	#rot_mat_poses = torch.tensor(scipy.spatial.transform.Rotation.from_quat(pose_search.base_grid_rot_mat[elts][:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32)
 	rot_mat_poses = pose_search.base_grid_rot_mat[elts]
 	wigner_poses = precompute_wigner_D(wigner_calculator, rot_mat_poses, l_max)
+	print(wigner_poses[0].device)
+	print(spherical_harmonics[0].device)
 	poses_spherical_harmonics = utils.apply_wigner_D(wigner_poses, spherical_harmonics, l_max)
 	true_images = utils.spherical_synthesis_hartley(alms_per_coordinate, poses_spherical_harmonics, circular_mask.mask, radius_indexes, device)
 	true_images = true_images.flatten(start_dim=-2, end_dim=-1)
