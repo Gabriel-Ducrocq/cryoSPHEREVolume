@@ -287,7 +287,7 @@ print("Device:", device)
 kmin = 12
 kmax = 94
 l_max = 5
-N_images = 10
+N_images = 128
 elts = [50, 313, 200, 3, 5, 500, 315]
 elts = np.random.randint(low = 0, high=576, size=(N_images, )).tolist()
 frequencies = grid.Grid(190, 1.0, device)
