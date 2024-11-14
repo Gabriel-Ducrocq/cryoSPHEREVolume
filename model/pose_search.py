@@ -193,6 +193,7 @@ class PoseSearch:
 		], -1)  # nq, 16, 2
 
 		quat_new = torch.tensor(quat_new).to(self.device)
+		ind_new = torch.tensor(ind_new).to(device)
 		dists = torch.minimum(
 		torch.sum((quat_new - quat[:, None, :]) ** 2, dim=-1),
 		torch.sum((quat_new + quat[:, None, :]) ** 2, dim=-1)
