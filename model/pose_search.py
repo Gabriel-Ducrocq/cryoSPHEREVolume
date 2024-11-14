@@ -116,7 +116,7 @@ class PoseSearch:
 		self.total_iter = total_iter
 		self.mask = Mask(npix, apix)
 		self._so3_neighbor_cache = {}
-		self.base_grid_rot_mat = torch.tensor(scipy.spatial.transform.Rotation.from_quat(base_grid["quat"][:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32)
+		self.base_grid_rot_mat = torch.tensor(scipy.spatial.transform.Rotation.from_quat(base_grid["quat"][:, [1, 2, 3, 0]]).as_matrix(), dtype=torch.float32, device=device)
 		self.all_wigner_base = precompute_wigner_D(wigner_calculator, self.base_grid_rot_mat, self.l_max)
 		self.base_quaternions = base_grid["quat"]
 		self.max_poses = max_poses
