@@ -89,12 +89,15 @@ def keep_matrix_simpler(loss, max_poses):
 	return torch.tensor(batch_size*max_poses), torch.tensor(batch_size*max_poses)
 	"""
 	top_k_val = loss.topk(max_poses, dim=-1, largest=False, sorted=True)[0][:, -1, None] # [batch_size, 1]
-	print("TOP_K_VAL", top_k_val.shape)
+	max_top_k_values = max_poses
+	#The following condition handles the possibles ties. If there is any tie on any batch, we increase the top k value we retain to the max value of top k for the batch.
+	max_top_k_values = torch.max(torch.sum(loss <= top_k_val, dim=-1))
+	if max_top_k_values > 8:
+		top_k_val = loss.topk(max_top_k_values, dim=-1, largest=False, sorted=True)[0][:, -1, None] # [batch_size, 1]
+
 	batch_number, rotation_to_keep = (loss <= top_k_val).nonzero(as_tuple=True) # [batch_size*max_poses,], [batch_size*max_poses,]
-	sup = torch.sum(loss <= top_k_val, dim=-1) > 8
-	print(top_k_val[sup, :])
-	print(loss[sup, :])
-	return batch_number, rotation_to_keep
+	print("NUmber of k lowest values:", torch.sum(loss <= top_k_val, dim=-1))
+	return batch_number, rotation_to_keep, max_top_k_values
 
 
 class PoseSearch:
@@ -165,28 +168,6 @@ class PoseSearch:
 		"""
 		return healpy_grid.get_neighbor_tensor(quat, q_ind, res, device)
 
-	#def subdivide(self,
-	#        quat,
-	#        q_ind,
-	#        cur_res,
-	#        device
-	#):
-	#    """
-	#    Subdivides poses for next resolution level.
-	#	nq = batch_size*max_poses
-	#    quat: [nq, 4]: quaternions
-	#    q_ind: [nq, 2]: np.array, index of current S2xS1 grid
-	#    cur_res: int: Current resolution level
-
-	#    output:
-	#        quat  [nq, 8, 4]
-	#        q_ind [nq, 8, 2]
-	#        rot   [nq * 8, 3, 3]
-	#    """
-	#    quat, q_ind = get_neighbor_so3(quat, q_ind, cur_res, device)
-	#    rot = lie_tools.quat_to_rotmat(quat.reshape(-1, 4))
-	#    return quat, q_ind, rot
-
 
 	def subdivide(self, quat, q_ind, res):
 		"""
@@ -215,13 +196,9 @@ class PoseSearch:
 		torch.sum((quat_new - quat[:, None, :]) ** 2, dim=-1),
 		torch.sum((quat_new + quat[:, None, :]) ** 2, dim=-1)
 		)  # nq, 16
-		print("QUAT NEW", quat_new.shape)
 		ii = torch.argsort(dists, dim=-1)[:, :self.max_poses].cpu()  #For each of the nq points, find the indices of the eight nearest points
 		quat_out = quat_new[torch.arange(nq)[..., None], ii] #Get the corresponding quaternions.
 		ind_out = ind_new[torch.arange(nq)[..., None], ii] #Get the corresponding SO(3) indexes.
-		print("II", ii.shape)
-		print("QUAT OUT", quat_out.shape)
-		print("MAX poses", self.max_poses)
 		return quat_out, ind_out
 
 
@@ -244,16 +221,9 @@ class PoseSearch:
 		mask_freq = self.mask.get_mask(k) #We define a new mask corresponding to kmin
 		mask_freq_in_circular_mask = mask_freq[self.circular_mask == 1] #We get the elements of the mask of kmin that should be included in the mask defined at the start of the run
 		radius_indexes, unique_radiuses = utils.get_radius_indexes(self.frequencies.freqs, mask_freq, self.device) #We get all the unique radiuses in kmin and their indexes
-		try:
-			batch_predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1].repeat_interleave(n_so3_points, dim=0), 
-							rotated_spherical_harmonics[:, mask_freq_in_circular_mask == 1], mask_freq, radius_indexes, device) # [batch_size*N_points_base_grid, npix, npix] of predicted images
-			print("BATCH PREDICTED SIZE", batch_predicted_images.shape)
-		except:
-			print("T1", alms_per_coordinate.shape)
-			print("T2", rotated_spherical_harmonics.shape)
-			print("T3", spherical_harmonics[1].shape)
-			print("T4", all_wigner[1].shape)
-			print("T5", n_so3_points)
+		batch_predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1].repeat_interleave(n_so3_points, dim=0), 
+						rotated_spherical_harmonics[:, mask_freq_in_circular_mask == 1], mask_freq, radius_indexes, device) # [batch_size*N_points_base_grid, npix, npix] of predicted images
+
 
 		return batch_predicted_images
 
@@ -267,20 +237,14 @@ class PoseSearch:
 		"""
 		batch_size = true_images.shape[0]
 		n_so3_points = int(batch_predicted_images.shape[0]/batch_size)
-		print("START INDICES TO KEEP")
-		print("n_so3_points", n_so3_points)
 		mask_freq = self.mask.get_mask(k) #
 		batch_predicted_images = batch_predicted_images.flatten(start_dim=1, end_dim=2)
-		print("batch_predicted_images", batch_predicted_images.shape)
 		#########      BE CAREFUL I AM NOT APPLYING ANY CTF HERE !!!!!!!!!!! ##########
 		losses = torch.mean((true_images[:, mask_freq==1].repeat_interleave(n_so3_points, dim=0) - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
-		print("LOSS SHAPE", losses.shape)
-		batch_number, rotation_to_keep = keep_matrix_simpler(losses, self.max_poses) # [batch_size*self.max_poses*8,], [batch_size*self.max_poses*8,]
-		print("TO KEEP", batch_number.shape, rotation_to_keep.shape)
+		batch_number, rotation_to_keep, max_poses = keep_matrix_simpler(losses, self.max_poses) # [batch_size*self.max_poses*8,], [batch_size*self.max_poses*8,]
 		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number, rotation_to_keep] #tensor of shape [batch_size*n_so3_points, 4]
 		keep_ind = grid_idx.reshape(batch_size, -1, 2)[batch_number, rotation_to_keep] # tensor of shape [batch_size*n_so3_points, 2]
-		print("END INDICES TO KEEP")
-		return keep_ind, keep_quat, rotation_to_keep, losses
+		return keep_ind, keep_quat, rotation_to_keep, losses, max_poses
 
 
 
@@ -300,21 +264,14 @@ class PoseSearch:
 			resolution = self.base_resol + n_iter
 			k = self.get_frequency_limit(n_iter)
 			print(f"N_iter: {n_iter}, resolution Fourier {k}, Resolution SO(3) grid {resolution}")
-			print("ALMS", alms_per_coordinate.shape)
-			print("all wigner", all_wigner[1].shape)
-			print("spherical harmonics", spherical_harmonics[1].shape)
-			print("n_so3_points", n_so3_points)
 			batch_predicted_images = self.evaluate_images(alms_per_coordinate, all_wigner, spherical_harmonics, k, n_so3_points)
 			#Be careful: we keep the eight lowest reconstruction error, but we split these into 8 new points (the s2 grid pixels are divided in 4 and the s1 grid pixels are divided in 2)
-			keep_ind, keep_quat, rotation_to_keep, losses = self.get_indices_to_keep(true_images, batch_predicted_images, base_grid_q, base_grid_idx, k)
-			print("KEEP QUAT", keep_quat.shape)
+			keep_ind, keep_quat, rotation_to_keep, losses, max_poses = self.get_indices_to_keep(true_images, batch_predicted_images, base_grid_q, base_grid_idx, k)
 			base_grid_q, base_grid_idx = self.subdivide(keep_quat, keep_ind, resolution) # tensor of shape [batch_size*self.max_poses, 8, 4] and [[batch_size*self.max_poses, 8, 2] 
 			base_grid_rotmat = quaternion_to_matrix(base_grid_q).reshape(-1, 3, 3)
-			print("BASE GRID QUATERNIONS", base_grid_rotmat.shape)
 			all_wigner = precompute_wigner_D(self.wigner_calculator, base_grid_rotmat, self.l_max, self.device)
-			print("ALL_WIGNER", all_wigner[1].shape)
-			n_so3_points = self.max_poses*8
-			print("N_SO3", n_so3_points)
+			#Note that it is necessary to use the redefined max_poses: of there are ties in the top k lowest reconstruction errors, we increase the number of poses kept.
+			n_so3_points = max_poses*8
 			end = time()
 			print("Total time one iteration", end-start)
 			print(f"MIN LOSS AT ITER {n_iter}:", losses.min(1))
@@ -325,7 +282,7 @@ class PoseSearch:
 
 import matplotlib.pyplot as plt
 kmin = 12
-kmax = 35
+kmax = 94
 l_max = 5
 N_images = 10
 elts = [50, 313, 200, 3, 5, 500, 315]
