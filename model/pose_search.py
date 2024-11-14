@@ -88,8 +88,12 @@ def keep_matrix_simpler(loss, max_poses):
 	:param loss: torch.tensor(batch_size, q)
 	return torch.tensor(batch_size*max_poses), torch.tensor(batch_size*max_poses)
 	"""
-	top_k_val = loss.topk(max_poses, dim=-1, largest=False, sorted=True)[0][:, -1, None]
-	batch_number, rotation_to_keep = (loss <= top_k_val).nonzero(as_tuple=True)
+	top_k_val = loss.topk(max_poses, dim=-1, largest=False, sorted=True)[0][:, -1, None] # [batch_size, 1]
+	print("TOP_K_VAL", top_k_val.shape)
+	batch_number, rotation_to_keep = (loss <= top_k_val).nonzero(as_tuple=True) # [batch_size*max_poses,], [batch_size*max_poses,]
+	sup = torch.sum(loss <= top_k_val, dim=-1) > 8
+	print(top_k_val[sup, :])
+	print(loss[sup, :])
 	return batch_number, rotation_to_keep
 
 
@@ -161,91 +165,123 @@ class PoseSearch:
 		"""
 		return healpy_grid.get_neighbor_tensor(quat, q_ind, res, device)
 
-	def subdivide(self,
-	        quat,
-	        q_ind,
-	        cur_res,
-	        device
-	):
-	    """
-	    Subdivides poses for next resolution level.
-		nq = batch_size*max_poses
-	    quat: [nq, 4]: quaternions
-	    q_ind: [nq, 2]: np.array, index of current S2xS1 grid
-	    cur_res: int: Current resolution level
+	#def subdivide(self,
+	#        quat,
+	#        q_ind,
+	#        cur_res,
+	#        device
+	#):
+	#    """
+	#    Subdivides poses for next resolution level.
+	#	nq = batch_size*max_poses
+	#    quat: [nq, 4]: quaternions
+	#    q_ind: [nq, 2]: np.array, index of current S2xS1 grid
+	#    cur_res: int: Current resolution level
 
-	    output:
-	        quat  [nq, 8, 4]
-	        q_ind [nq, 8, 2]
-	        rot   [nq * 8, 3, 3]
-	    """
-	    quat, q_ind = get_neighbor_so3(quat, q_ind, cur_res, device)
-	    rot = lie_tools.quat_to_rotmat(quat.reshape(-1, 4))
-	    return quat, q_ind, rot
+	#    output:
+	#        quat  [nq, 8, 4]
+	#        q_ind [nq, 8, 2]
+	#        rot   [nq * 8, 3, 3]
+	#    """
+	#    quat, q_ind = get_neighbor_so3(quat, q_ind, cur_res, device)
+	#    rot = lie_tools.quat_to_rotmat(quat.reshape(-1, 4))
+	#    return quat, q_ind, rot
 
 
-	def replace_wigner(self, argmin_wigner, wigner, losses_lb, reconstruction_errors, l_max):
+	def subdivide(self, quat, q_ind, res):
 		"""
-		This functions takes replaces the batch_dimensions of argmin_wigner with the one of wigner, only on the samples where losses_lb < reconstruction_errors
-		:param reconstruction_errors: torch.tensor(batch_size, ) of the lowest error so far.
+		Subdivide the SO(3) grid in the points that we keep.
+		:param quat: torch.tensor(nq, 4)
+		:param ind: torch.tensor(nq, 2) with s2 indexes in (nq, 0) and s1 indexes in (nq, 1)
+		:param res: integer, current resolution.
+		return torch.tensor(nq, 8, 4) of quaternions in the new points, torch.tensor(nq, 8, 2) of the indexes of the points on SO(3)
 		"""
-		for ell in range((l_max+1)**2):
-			argmin_wigner[ell][losses_lb < reconstruction_errors] = wigner[ell][losses_lb < reconstruction_errors]
+		nq = quat.shape[0]
+		new_s2_coordinates, new_s2_ind = healpy_grid.get_s2_neighbor_tensor(q_ind[:, 0], res)
+		theta, phi = new_s2_coordinates
+		psi, new_s1_ind = healpy_grid.get_s1_neighbor_tensor(q_ind[:, 1], res)
+		quat_new = healpy_grid.hopf_to_quat_tensor(
+		np.repeat(theta[..., None], psi.shape[-1], axis=-1).reshape(nq, -1),
+		np.repeat(phi[..., None], psi.shape[-1], axis=-1).reshape(nq, -1),
+		np.repeat(psi[:, None], theta.shape[-1], axis=-2).reshape(nq, -1)
+		) # nq, 16, 4
+		ind_new = np.concatenate([
+		np.repeat(new_s2_ind[..., None], psi.shape[-1], axis=-1).reshape(nq, -1)[..., None],
+		np.repeat(new_s1_ind[:, None], theta.shape[-1], axis=-2).reshape(nq, -1)[..., None]
+		], -1)  # nq, 16, 2
+
+		quat_new = torch.tensor(quat_new).to(self.device)
+		dists = torch.minimum(
+		torch.sum((quat_new - quat[:, None, :]) ** 2, dim=-1),
+		torch.sum((quat_new + quat[:, None, :]) ** 2, dim=-1)
+		)  # nq, 16
+		print("QUAT NEW", quat_new.shape)
+		ii = torch.argsort(dists, dim=-1)[:, :self.max_poses].cpu()  #For each of the nq points, find the indices of the eight nearest points
+		quat_out = quat_new[torch.arange(nq)[..., None], ii] #Get the corresponding quaternions.
+		ind_out = ind_new[torch.arange(nq)[..., None], ii] #Get the corresponding SO(3) indexes.
+		print("II", ii.shape)
+		print("QUAT OUT", quat_out.shape)
+		print("MAX poses", self.max_poses)
+		return quat_out, ind_out
 
 
-	def search(self, alms_per_coordinate, true_images, spherical_harmonics, l_max, device, ctf, indexes):
+	def evaluate_images(self, alms_per_coordinates, all_wigner, spherical_harmomics, k, n_so3_points):
 		"""
-		Perform the pose search with frequency marching
-		:param alms_per_coordinate: torch.tensor(batch_size, N_pixels_in_mask, (l_max+1)**2)
-		:param true_images: torch.tensor(batch_size, side_shape**2) of true, translated images, expressed in Hartley space.
+		Evaluates the images for a set of rotation and a given alms
+		:param alms_per_coordinates: torch.tensor(batch_size, N_pixels_in_bigger_mask, (lmax + 1)**2) of alms coefficient for each sample in batch
+		:param all_wigner: list of torch.tensor(n_so3_points, 2l+1, 2l+1) of wigner matrices, containing, for each of the rotation in the pose search, the wigner D matrix for l.
+		:param spherical_harmonics: torch.tensor(N_pixels_in_bigger_mask, (lmax+1)**2)
+		:param k: integer, current resolution of the masking in Fourier space.
+		:param n_so3_points: integer, number of points in SO(3) that we are evaluating, so after the first iteration it is batch_size*self.max_poses*8
+		return torch.tensor(batch_size*n_so3_points, n_pix**2) of predicted images
+		"""
+		batch_size = alms_per_coordinate.shape[0]
+		###########       I can surely make the next line faster by conidering only k_min instead of the circular mask defined in utils !!!!! ######
+		rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max) # [N_points_base_grid, N_pixels_in_mask, (lmax+1)**2] Get the rotated sph for each of the base grid points
+		if k == self.kmin:
+			rotated_spherical_harmonics = rotated_spherical_harmonics.repeat(batch_size, 1, 1) # [batch_size*N_points_base_grid, N_pixels_in_mask, (lmax+1)**2]
+
+		mask_freq = self.mask.get_mask(k) #We define a new mask corresponding to kmin
+		mask_freq_in_circular_mask = mask_freq[self.circular_mask == 1] #We get the elements of the mask of kmin that should be included in the mask defined at the start of the run
+		radius_indexes, unique_radiuses = utils.get_radius_indexes(self.frequencies.freqs, mask_freq, self.device) #We get all the unique radiuses in kmin and their indexes
+		try:
+			batch_predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1].repeat_interleave(n_so3_points, dim=0), 
+							rotated_spherical_harmonics[:, mask_freq_in_circular_mask == 1], mask_freq, radius_indexes, device) # [batch_size*N_points_base_grid, npix, npix] of predicted images
+			print("BATCH PREDICTED SIZE", batch_predicted_images.shape)
+		except:
+			print("T1", alms_per_coordinate.shape)
+			print("T2", rotated_spherical_harmonics.shape)
+			print("T3", spherical_harmonics[1].shape)
+			print("T4", all_wigner[1].shape)
+			print("T5", n_so3_points)
+
+		return batch_predicted_images
+
+	def get_indices_to_keep(self, true_images, batch_predicted_images, grid_quat, grid_idx, k):
+		"""
+		:param true_images: torch.tensor(batch_size, n_pix**2)
+		:param batch_predicted_images: torch.tensor(batch_size*self.max_poses*8, n_pix**2)
+		:param grid_quat: torch.tensor(batch_size*self.max_poses, 8, 4)
+		:param grid_quat: torch.tensor(batch_size*self.max_poses, 8, 2)
+		:param k: integer, radius of the mask we apply in Fourier coordinates.
 		"""
 		batch_size = true_images.shape[0]
-		n_so3_points = len(self.all_wigner_base[0])
-		alms_per_coordinate = alms_per_coordinate.repeat_interleave(n_so3_points, dim=0)
-		repeat_indexes = torch.arange(batch_size).repeat_interleave(n_so3_points)
-		#Note that all_wigner is a list containing tensor of size (batch_size x n_so3_points, 2l+1, 2l+1)
-		all_wigner = self.all_wigner_base
-		#Since I know we keep only 8 rotations, I can store all the max_pose*n_neighbors current quaternions per sample in a tensor.
-		all_quaternions = torch.zeros(batch_size, n_so3_points, 4, dtype=torch.float32, device=self.device)
-		all_quaternions = torch.zeros(batch_size*8, 4, dtype=torch.float32, device=self.device)
-		#Same, I can keep in memory the indices corresponding to each rotation for each sample
-		all_indices = np.zeros((batch_size, n_so3_points, 2), dtype=int)
-		for n_it in range(1, self.total_iter+1):
-			print("Iteration number:", n_it)
-			resol = self.base_resol + (n_it -1) #n_it start at 1 but we want our resol to start at 1
-			k = self.get_frequency_limit(n_it)
-			mask_freq = self.mask.get_mask(k)
-			mask_freq2 = Mask(self.npix, self.apix, radius=k)
-			radius_indexes, unique_radiuses = utils.get_radius_indexes(self.frequencies.freqs, mask_freq2, self.device)
-			#We create a tensor for storing all the losses for all batches and all poses.
-			all_losses_lb = torch.ones(batch_size, n_so3_points, dtype=torch.float32, device=self.device)*torch.inf
-			#We make a rotation of the spherical harmomics
-			rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-			rotated_spherical_harmonics = rotated_spherical_harmonics.repeat(batch_size, 1, 1)
-			#We want to know which component to keep in the frame of the circular mask we apply, given that our new mask is smaller.
-			mask_freq_in_circular_mask = mask_freq[self.circular_mask == 1]
-			#We only synthesize the frequencies within our new, smaller mask
-			predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1], 
-															rotated_spherical_harmonics[:, mask_freq_in_circular_mask == 1], mask_freq, radius_indexes, device)
-			if ctf is not None:
-				#We have to repat the indexes for the ctf, because we have the same image for n_so3_points repeated.
-				indexes = indexes.repeat(n_so3_points, 0)
-				batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
-			else:
-				batch_predicted_images = predicted_images
+		n_so3_points = int(batch_predicted_images.shape[0]/batch_size)
+		print("START INDICES TO KEEP")
+		print("n_so3_points", n_so3_points)
+		mask_freq = self.mask.get_mask(k) #
+		batch_predicted_images = batch_predicted_images.flatten(start_dim=1, end_dim=2)
+		print("batch_predicted_images", batch_predicted_images.shape)
+		#########      BE CAREFUL I AM NOT APPLYING ANY CTF HERE !!!!!!!!!!! ##########
+		losses = torch.mean((true_images[:, mask_freq==1].repeat_interleave(n_so3_points, dim=0) - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
+		print("LOSS SHAPE", losses.shape)
+		batch_number, rotation_to_keep = keep_matrix_simpler(losses, self.max_poses) # [batch_size*self.max_poses*8,], [batch_size*self.max_poses*8,]
+		print("TO KEEP", batch_number.shape, rotation_to_keep.shape)
+		keep_quat = grid_quat.reshape(batch_size, -1, 4)[batch_number, rotation_to_keep] #tensor of shape [batch_size*n_so3_points, 4]
+		keep_ind = grid_idx.reshape(batch_size, -1, 2)[batch_number, rotation_to_keep] # tensor of shape [batch_size*n_so3_points, 2]
+		print("END INDICES TO KEEP")
+		return keep_ind, keep_quat, rotation_to_keep, losses
 
-			batch_predicted_images = batch_predicted_images.flatten(start_dim=1, end_dim=2)
-			losses = torch.mean((true_images[:, mask_freq==1][repeat_indexes] - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
-			#batch_idx and poses_idx are (batch_size*self.max_poses)
-			batch_idx, poses_idx = keep_matrix_simpler(losses, self.max_poses)
-			#quat is (batch_size*self.max_poses, 4)
-			quat = all_quaternions[batch_idx, poses_idx]
-			#idx is (batch_size*self.max_poses, 2) tensor of indexes on SO(3)
-			idx = all_indices[batch_idx, poses_idx]
-			all_quaternions, all_indices, all_wigner = self.subdivide(all_quaternions, idx, resol, device)
-			n_so3_points = self.max_poses*self.neighbors
-
-		return all_indices
 
 
 	def search_new(self, alms_per_coordinate, true_images, spherical_harmonics, l_max, device, ctf, indexes):
@@ -258,29 +294,39 @@ class PoseSearch:
 		n_so3_points = len(self.all_wigner_base[0]) #number of points in the base grid of SO(3)
 		base_grid_q = self.base_quaternions[None, :, :].repeat(batch_size, axis=0) #shape [batch_size, N_points_base_grid, 4] np.array
 		base_grid_idx = self.base_grid_idx[None, :, :].repeat(batch_size, axis=0) #shape [batch_size, N_points_base_grid, 2] for coordinates on s2 and s1
-		print("BASE GRID", self.base_grid_idx)
-		###########       I can surely make the next line faster by conidering only k_min instead of the circular mask defined in utils !!!!! ######
-		rotated_spherical_harmonics = utils.apply_wigner_D(self.all_wigner_base, spherical_harmonics, l_max) # [N_points_base_grid, N_pixels_in_mask, (lmax+1)**2] Get the rotated sph for each of the base grid points
-		rotated_spherical_harmonics = rotated_spherical_harmonics.repeat(batch_size, 1, 1) # [batch_size*N_points_base_grid, N_pixels_in_mask, (lmax+1)**2]
-		mask_freq = self.mask.get_mask(self.kmin) #We define a new mask corresponding to kmin
-		mask_freq_in_circular_mask = mask_freq[self.circular_mask == 1] #We get the elements of the mask of kmin that should be included in the mask defined at the start of the run
-		radius_indexes, unique_radiuses = utils.get_radius_indexes(self.frequencies.freqs, mask_freq, self.device) #We get all the unique radiuses in kmin and their indexes
-		batch_predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate[:, mask_freq_in_circular_mask == 1].repeat_interleave(n_so3_points, dim=0), 
-							rotated_spherical_harmonics[:, mask_freq_in_circular_mask == 1], mask_freq, radius_indexes, device) # [batch_size*N_points_base_grid, npix, npix] of predicted images
+		all_wigner = self.all_wigner_base # list of tensot (n_so3_points_in_base_grid, 2l+1, 2l+1)
+		for n_iter in range(0, self.total_iter+1):
+			start = time()
+			resolution = self.base_resol + n_iter
+			k = self.get_frequency_limit(n_iter)
+			print(f"N_iter: {n_iter}, resolution Fourier {k}, Resolution SO(3) grid {resolution}")
+			print("ALMS", alms_per_coordinate.shape)
+			print("all wigner", all_wigner[1].shape)
+			print("spherical harmonics", spherical_harmonics[1].shape)
+			print("n_so3_points", n_so3_points)
+			batch_predicted_images = self.evaluate_images(alms_per_coordinate, all_wigner, spherical_harmonics, k, n_so3_points)
+			#Be careful: we keep the eight lowest reconstruction error, but we split these into 8 new points (the s2 grid pixels are divided in 4 and the s1 grid pixels are divided in 2)
+			keep_ind, keep_quat, rotation_to_keep, losses = self.get_indices_to_keep(true_images, batch_predicted_images, base_grid_q, base_grid_idx, k)
+			print("KEEP QUAT", keep_quat.shape)
+			base_grid_q, base_grid_idx = self.subdivide(keep_quat, keep_ind, resolution) # tensor of shape [batch_size*self.max_poses, 8, 4] and [[batch_size*self.max_poses, 8, 2] 
+			base_grid_rotmat = quaternion_to_matrix(base_grid_q).reshape(-1, 3, 3)
+			print("BASE GRID QUATERNIONS", base_grid_rotmat.shape)
+			all_wigner = precompute_wigner_D(self.wigner_calculator, base_grid_rotmat, self.l_max, self.device)
+			print("ALL_WIGNER", all_wigner[1].shape)
+			n_so3_points = self.max_poses*8
+			print("N_SO3", n_so3_points)
+			end = time()
+			print("Total time one iteration", end-start)
+			print(f"MIN LOSS AT ITER {n_iter}:", losses.min(1))
 
-		#########      BE CAREFUL I AM NOT APPLYING ANY CTF HERE !!!!!!!!!!! ##########
-		batch_predicted_images = batch_predicted_images.flatten(start_dim=1, end_dim=2)
-		losses = torch.mean((true_images[:, mask_freq==1].repeat_interleave(n_so3_points, dim=0) - batch_predicted_images[:, mask_freq==1])**2, dim=-1).reshape(batch_size, n_so3_points)
-		batch_number, rotation_to_keep = keep_matrix_simpler(losses, self.max_poses)
-		return batch_number, rotation_to_keep.cpu().numpy(), losses
+		return rotation_to_keep.cpu().numpy(), losses
 
 
 
 import matplotlib.pyplot as plt
-torch.manual_seed(15)
 kmin = 12
 kmax = 35
-l_max = 2
+l_max = 5
 N_images = 10
 elts = [50, 313, 200, 3, 5, 500, 315]
 elts = np.random.randint(low = 0, high=576, size=(N_images, )).tolist()
@@ -312,7 +358,7 @@ quat_poses = base_grid["quat"][elts]
 #Get the corresponding indices
 indices_poses = base_grid["ind"][elts]
 #Defining the pose search object
-pose_search = PoseSearch(kmin, kmax, wigner_calculator, base_grid, circular_mask = circular_mask.mask, frequencies=frequencies, l_max=l_max, npix=190, apix=1.0, total_iter=1, max_poses = 1, n_neighbors=8)
+pose_search = PoseSearch(kmin, kmax, wigner_calculator, base_grid, circular_mask = circular_mask.mask, frequencies=frequencies, l_max=l_max, npix=190, apix=1.0, total_iter=5, max_poses = 8, n_neighbors=8)
 
 
 if False:
@@ -342,15 +388,15 @@ else:
 
 
 
-batch_number, rotation_to_keep, losses = pose_search.search_new(alms_per_coordinate, true_images, spherical_harmonics, l_max, device, ctf=None, indexes=None)
+rotation_to_keep, losses = pose_search.search_new(alms_per_coordinate, true_images, spherical_harmonics, l_max, device, ctf=None, indexes=None)
 
-print(batch_number)
 #print("Rotation to keep", rotation_to_keep)
 #print("Poses Quaternions", quat_poses)
 #print(losses[0, 50], losses[0, 255])
 #print(losses.topk(2, dim=-1, largest=False, sorted=True)[1])
 
 print("Max loss", torch.max(losses.min(1)[0]))
+print(rotation_to_keep)
 print("Max distances between true and recover index on SO(3)", np.max(np.abs(np.array(rotation_to_keep) - np.array(elts))))
 
 

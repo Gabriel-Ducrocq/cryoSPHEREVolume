@@ -44,7 +44,8 @@ def pix2ang_tensor(n_side, i_pix, nest=False, lonlat=False):
 
     output: [2, nq, 4] (np.array)
     """
-    assert _GRIDS is not None and n_side in _GRIDS and nest and not lonlat
+    assert n_side in _GRIDS, f"n_side {n_side} is not on the precomputed grid resolutions"
+    assert _GRIDS is not None and nest and not lonlat
     # _GRIDS[n_side]: [x, 2]
     #We get the number of locations on S2 to query
     nq = i_pix.shape[0]
