@@ -279,8 +279,8 @@ class PoseSearch:
 		return rotation_to_keep.cpu().numpy(), losses
 
 
-
-import matplotlib.pyplot as plt
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
 kmin = 12
 kmax = 94
 l_max = 5
@@ -315,7 +315,7 @@ quat_poses = base_grid["quat"][elts]
 #Get the corresponding indices
 indices_poses = base_grid["ind"][elts]
 #Defining the pose search object
-pose_search = PoseSearch(kmin, kmax, wigner_calculator, base_grid, circular_mask = circular_mask.mask, frequencies=frequencies, l_max=l_max, npix=190, apix=1.0, total_iter=5, max_poses = 8, n_neighbors=8)
+pose_search = PoseSearch(kmin, kmax, wigner_calculator, base_grid, circular_mask = circular_mask.mask, frequencies=frequencies, l_max=l_max, npix=190, apix=1.0, total_iter=5, max_poses = 8, n_neighbors=8, device=device)
 
 
 if False:
