@@ -33,8 +33,7 @@ def get_s2_neighbor_tensor(mini, cur_res):
     """
     n_side = 2 ** (cur_res + 1)
     #Since we use a nested scheme for healpix, each grid point is divided into 4 points.
-    ind = np.arange(4) + 4 * mini[..., None]
-    #We return 
+    ind = np.arange(4) + 4 * mini[..., None].cpu().numpy()
     return pix2ang_tensor(n_side, ind, nest=True), ind
 
 
