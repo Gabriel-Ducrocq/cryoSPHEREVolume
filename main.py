@@ -90,14 +90,8 @@ def train(yaml_setting_path, debug_mode):
             else:
                 batch_predicted_images = predicted_images
 
-            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
-            if use_ctf:
-                batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
-            else:
-                batch_predicted_images = predicted_images
 
-
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, latent_mean, latent_std, experiment_settings,
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_latent_variables, experiment_settings,
                                 tracking_metrics, experiment_settings["loss_weights"])
             print("NLL", nll)
             start_grad = time()
