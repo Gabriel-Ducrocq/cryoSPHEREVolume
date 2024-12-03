@@ -125,10 +125,10 @@ def parse_yaml(path):
 
     grid = Grid(Npix_downsize, apix_downsize)
     pe_dim = experiment_settings.get("pe_dim", Npix_downsize/2)
-    pos_encoding = PositionalEncoding(pe_dim, pe_dim)
+    pos_encoding = PositionalEncoding(pe_dim, Npix_downsize)
 
 
-    return decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
+    return decoder, optimizer, image_translator, dataset, N_epochs, batch_size, unique_radiuses, radius_indexes, experiment_settings, device, \
     scheduler, frequencies.freqs, frequencies.freqs_volume, ctf_experiment, use_ctf, circular_mask, grid, pos_encoding, mask_radius
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
