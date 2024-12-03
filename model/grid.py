@@ -108,7 +108,7 @@ class Mask(torch.nn.Module):
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, pe_dim=6, D=128, pe_type="geo2", device="cpu", include_input=False):
+    def __init__(self, pe_dim=6, D=128, pe_type="geo2", include_input=False):
         """
         Initilization of a positional encoder.
 
@@ -152,8 +152,6 @@ class PositionalEncoding(nn.Module):
             pass
         else:
             raise NotImplemented
-
-        self.frequency_bands = self.frequency_bands.to(device)
 
     def __repr__(self):
         return str(self.__class__.__name__) + f"({self.pe_type}, num={self.pe_dim})"
