@@ -330,20 +330,21 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     wandb.log({key: np.mean(val) for key, val in tracking_metrics.items()})
     wandb.log({"epoch": epoch})
     wandb.log({"lr":optimizer.param_groups[0]['lr']})
-    #real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
-    #true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
-    #                                     caption="Original image")
-    #pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
-    #print("PRED IM", pred_im.shape)
-    #predicted_image_wandb = wandb.Image(pred_im,
-    #                                     caption="Predicted images")
-    #wandb.log({"Images/true_image": real_image_again_wandb})
-    #wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
-    #wandb.log({"Images/predicted_image": predicted_image_wandb})
-    predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
-    true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
-    wandb.log({"Images/true_image_hartley": true_image_hartley})
-    wandb.log({"Images/predicted_hartley": predicted_image_hartley})
+    real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
+    true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
+                                         caption="Original image")
+    pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
+    print("PRED IM", pred_im.shape)
+    predicted_image_wandb = wandb.Image(pred_im,
+                                         caption="Predicted images")
+    wandb.log({"Images/true_image": real_image_again_wandb})
+    wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
+    wandb.log({"Images/predicted_image": predicted_image_wandb})
+
+    #predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
+    #true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
+    #wandb.log({"Images/true_image_hartley": true_image_hartley})
+    #wandb.log({"Images/predicted_hartley": predicted_image_hartley})
 
     torch.save(decoder, experiment_settings["folder_path"] + "models_main/full_model" + str(epoch))
 
