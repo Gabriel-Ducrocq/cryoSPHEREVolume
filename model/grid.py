@@ -60,7 +60,7 @@ class Mask(torch.nn.Module):
         self.side_shape = side_shape
         self.apix = apix
 
-        if side_shape % 2 == 0
+        if side_shape % 2 == 0:
             extent = 1/(2*apix)
             ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
         else:
