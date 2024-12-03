@@ -24,7 +24,7 @@ def train(yaml_setting_path, debug_mode):
     :param yaml_setting_path: str, path the yaml containing all the details of the experiment
     :return:
     """
-    decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
+    decoder, optimizer, image_translator, dataset, N_epochs, batch_size, unique_radiuses, radius_indexes, experiment_settings, device, \
         scheduler, freqs, freqs_volume, ctf, use_ctf, circular_mask, grid, pos_encoding, mask_radius = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
