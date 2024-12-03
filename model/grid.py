@@ -108,7 +108,7 @@ class Mask(torch.nn.Module):
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, pe_dim=6, D=128, pe_type="geo", include_input=False):
+    def __init__(self, pe_dim=6, D=128, pe_type="geo2", include_input=False):
         """
         Initilization of a positional encoder.
 
