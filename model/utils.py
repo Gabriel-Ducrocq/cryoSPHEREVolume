@@ -97,7 +97,7 @@ def parse_yaml(path):
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask.get_mask(experiment_settings["mask_radius"]), device)
     N_unique_radiuses = len(unique_radiuses)
 
-    decoder = MLP(experiment_settings["latent_dimension"] + 3*experiment_settings["pe_dim"], 1,
+    decoder = MLP(experiment_settings["latent_dimension"] + 2*3*experiment_settings["pe_dim"], 1,
                   experiment_settings["decoder"]["hidden_dimensions"], network_type="decoder", device=device)
     decoder.to(device)
 
