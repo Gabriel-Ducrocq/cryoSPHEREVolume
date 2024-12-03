@@ -32,6 +32,7 @@ class MLP(nn.Module):
     def forward(self, x):
         x = self.input_layer(x)
         hidden = self.linear_relu_stack(x)
+        print("HIDDEN:", hidden)
         output = self.output_layer(hidden)
         if self.type == "encoder" and self.latent_type == "continuous":
             latent_mean = output[:, :int(self.out_dim/2)]
