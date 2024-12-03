@@ -153,7 +153,7 @@ class PositionalEncoding(nn.Module):
         else:
             raise NotImplemented
 
-        self.frequency_bands.to(device)
+        self.frequency_bands = self.frequency_bands.to(device)
 
     def __repr__(self):
         return str(self.__class__.__name__) + f"({self.pe_type}, num={self.pe_dim})"
