@@ -12,7 +12,6 @@ import model.utils
 from tqdm import tqdm
 from time import time
 from torch.utils.data import DataLoader
-from model import pose_search
 
 parser_arg = argparse.ArgumentParser()
 parser_arg.add_argument('--experiment_yaml', type=str, required=True)
@@ -86,7 +85,7 @@ def train(yaml_setting_path, debug_mode):
             predicted_images = torch.zeros((batch_size, batch_images.shape[1]*batch_images.shape[2]), dtype=torch.float32, device=device)
             predicted_images[mask==1] = decoded_images
             predicted_images = predicted_images.reshape(batch_images.shape)
-            
+
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
