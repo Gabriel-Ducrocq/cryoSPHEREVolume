@@ -102,7 +102,7 @@ def parse_yaml(path):
     decoder.to(device)
 
     if experiment_settings["optimizer"]["name"] == "adam":
-        optimizer = torch.optim.Adam(vae.parameters(), lr=experiment_settings["optimizer"]["learning_rate"])
+        optimizer = torch.optim.Adam(decoder.parameters(), lr=experiment_settings["optimizer"]["learning_rate"])
     else:
         raise Exception("Optimizer must be Adam")
 
