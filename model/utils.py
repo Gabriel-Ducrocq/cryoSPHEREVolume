@@ -84,7 +84,6 @@ def parse_yaml(path):
         device = "cpu"
 
     use_ctf = experiment_settings["use_ctf"]
-    l_max = experiment_settings["l_max"]
     particles_path = experiment_settings["particles_path"]
     apix = image_settings["apix"]
     Npix = image_settings["Npix"]
