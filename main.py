@@ -52,8 +52,6 @@ def train(yaml_setting_path, debug_mode):
         images_mean = torch.mean(images_for_std).to(device)
         break
 
-    grid_wigner = pose_search.precompute_wigner_D(wigner_calculator, grid_rotations, l_max, device=device)
-
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
