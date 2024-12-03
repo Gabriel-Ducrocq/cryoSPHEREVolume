@@ -306,7 +306,7 @@ def hartley_transform_3d(volume):
     hartley_volume = fourier_volume.real - fourier_volume.imag
     return hartley_volume
 
-def monitor_training(tracking_metrics, epoch, experiment_settings, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
+def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
                      images_mean = None, images_std = None):
     """
     Monitors the training process through wandb and saving masks and models
@@ -340,7 +340,7 @@ def monitor_training(tracking_metrics, epoch, experiment_settings, optimizer, de
     wandb.log({"Images/true_image": real_image_again_wandb})
     wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
     wandb.log({"Images/predicted_image": predicted_image_wandb})
-    torch.save(vae, experiment_settings["folder_path"] + "models_main/full_model" + str(epoch))
+    torch.save(decoder, experiment_settings["folder_path"] + "models_main/full_model" + str(epoch))
 
 
 

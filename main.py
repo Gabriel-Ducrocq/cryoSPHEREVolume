@@ -103,7 +103,7 @@ def train(yaml_setting_path, debug_mode):
             scheduler.step()
 
         if not debug_mode:
-            model.utils.monitor_training(tracking_metrics, epoch, experiment_settings, optimizer, device=device,
+            model.utils.monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=device,
                     true_images=non_standardized, predicted_images=predicted_images.flatten(start_dim=1, end_dim=2), real_image=original_images,
                                          images_mean=images_mean, images_std=images_std)
 
