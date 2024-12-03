@@ -23,7 +23,7 @@ class Grid(torch.nn.Module):
         #Since the theoretical Fourier transform is periodic of period 1/apix, it means we are sampling on an interval [-1/2apix, 1/2apix] for odd size or
         # [-1/2apix, -1/2apix[ for even sizes. In any case, the highest frequency in absolue value is 1/2apix. So we should divide by 1/2apix to recover an interval [-1, 1].
         #Since we apply a fftshift, the 0 frequency is at the center.
-        if side_shape % 2 == 0
+        if side_shape % 2 == 0:
             extent = 1/(2*apix)
             ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
         else:
