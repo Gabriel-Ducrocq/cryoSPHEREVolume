@@ -65,6 +65,7 @@ def train(yaml_setting_path, debug_mode):
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
             batch_poses_translation = batch_poses_translation.to(device)
+            batch_latent_variables = batch_latent_variables.to(device)
             non_standardized = batch_images.flatten(start_dim=1, end_dim=2)
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
@@ -75,7 +76,7 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
             mask = circular_mask.get_mask(mask_radius)
-            rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1])
+            rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1].to(device))
             coordinates_embedding = pos_encoding(rotated_grid)
 
             decoder_input = torch.cat([coordinates_embedding, batch_latent_variables[:, None, :].expand(-1, rotated_grid.shape[1], -1)], dim=-1)
