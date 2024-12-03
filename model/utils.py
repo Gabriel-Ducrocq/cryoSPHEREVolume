@@ -306,7 +306,7 @@ def hartley_transform_3d(volume):
     hartley_volume = fourier_volume.real - fourier_volume.imag
     return hartley_volume
 
-def monitor_training(tracking_metrics, epoch, experiment_settings, vae, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
+def monitor_training(tracking_metrics, epoch, experiment_settings, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
                      images_mean = None, images_std = None):
     """
     Monitors the training process through wandb and saving masks and models
