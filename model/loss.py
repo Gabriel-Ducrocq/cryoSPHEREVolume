@@ -25,7 +25,7 @@ def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
                                            - latent_std ** 2, dim=1))
 
 
-def compute_loss(predicted_images, images, experiment_settings, tracking_dict, loss_weights):
+def compute_loss(predicted_images, images, tracking_dict):
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
