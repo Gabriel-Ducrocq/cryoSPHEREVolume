@@ -90,7 +90,7 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    mask_radius = experiment_settings.get("mask_radius", down_side_shape/2)
+    mask_radius = experiment_settings.get("mask_radius", Npix_downsize/2)
     circular_mask = Mask(Npix_downsize, apix_downsize, radius = mask_radius)
 
     frequencies = Grid(Npix_downsize, apix_downsize, device)
@@ -129,7 +129,7 @@ def parse_yaml(path):
 
 
     return decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf, circular_mask, grid, pos_encoding, mask_radius
+    scheduler, frequencies.freqs, frequencies.freqs_volume, ctf_experiment, use_ctf, circular_mask, grid, pos_encoding, mask_radius
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """
