@@ -1,5 +1,4 @@
 import torch
-import sphericart as sct
 import wandb
 import sys
 import os
@@ -11,8 +10,7 @@ from vae import VAE
 from mlp import MLP
 from ctf import CTF
 import yaml
-from wignerD import WignerD
-from grid import Grid, Mask
+from grid import Grid, Mask, PositionalEncoding
 import numpy as np
 #from astropy.coordinates import cartesian_to_spherical
 import starfile
@@ -56,6 +54,7 @@ def get_radius_indexes(freqs, circular_mask, device):
     #Computes the radius in Fourier space:
     radius = torch.sqrt(torch.sum(freqs ** 2, axis=-1))
     #Get the radius within the mask.
+    print("CIRCULAR MASK DEVICE:", circular_mask.device)
     radius_within_mask = radius[circular_mask==1]
     #Get the unique radiuses in the images within the mask
     unique_radius = torch.unique(radius_within_mask, sorted=True)
@@ -92,21 +91,16 @@ def parse_yaml(path):
     Npix_downsize = image_settings["Npix_downsize"]
     apix_downsize = Npix * apix /Npix_downsize
 
-    circular_mask = Mask(Npix_downsize, apix_downsize, radius = experiment_settings["mask_radius"])
+    mask_radius = experiment_settings.get("mask_radius", down_side_shape/2)
+    circular_mask = Mask(Npix_downsize, apix_downsize, radius = mask_radius)
 
     frequencies = Grid(Npix_downsize, apix_downsize, device)
     radius_indexes, unique_radiuses = get_radius_indexes(frequencies.freqs, circular_mask.get_mask(experiment_settings["mask_radius"]), device)
     N_unique_radiuses = len(unique_radiuses)
 
-    encoder = MLP(Npix_downsize**2,
-                  experiment_settings["latent_dimension"] * 2,
-                  experiment_settings["encoder"]["hidden_dimensions"], network_type="encoder", device=device,
-                  latent_type="continuous")
-    decoder = MLP(experiment_settings["latent_dimension"], N_unique_radiuses*(l_max+1)**2,
+    decoder = MLP(experiment_settings["latent_dimension"] + 3*experiment_settings["pe_dim"], 1,
                   experiment_settings["decoder"]["hidden_dimensions"], network_type="decoder", device=device)
-
-    vae = VAE(encoder, decoder, device, latent_dim=experiment_settings["latent_dimension"], lmax=l_max)
-    vae.to(device)
+    decoder.to(device)
 
     if experiment_settings["optimizer"]["name"] == "adam":
         optimizer = torch.optim.Adam(vae.parameters(), lr=experiment_settings["optimizer"]["learning_rate"])
@@ -116,7 +110,7 @@ def parse_yaml(path):
 
     particles_star = starfile.read(experiment_settings["star_file"])
     ctf_experiment = CTF.from_starfile(experiment_settings["star_file"], apix = apix_downsize, side_shape=Npix_downsize , device=device)
-    dataset = ImageDataSet(apix, Npix, particles_star["particles"], particles_path, down_side_shape=Npix_downsize)
+    dataset = ImageDataSet(apix, Npix, particles_star["particles"], particles_path, experiment_settings["latent_variables_path"], down_side_shape=Npix_downsize)
     #dataset = ImageDataSet(apix, Npix, particles_star, particles_path, down_side_shape=Npix_downsize)
 
     scheduler = None
@@ -128,22 +122,15 @@ def parse_yaml(path):
 
     N_epochs = experiment_settings["N_epochs"]
     batch_size = experiment_settings["batch_size"]
-    sh = sct.SphericalHarmonics(l_max=l_max, normalized=True)
-    spherical_harmonics = get_real_spherical_harmonics(frequencies.freqs[circular_mask.mask ==1], sh, device, l_max)
-    wigner_calculator = WignerD(l_max, device)
     image_translator = SpatialGridTranslate(D=Npix_downsize, device=device)
 
-    grid_rotations = None
-    if experiment_settings["poses"] is not None:
-        print("Perfoming pose search !")
-        #Loading rotation poses from quaternions and set them as matrix:
-        grid_rotations = np.load(experiment_settings["poses"])
-        grid_rotations = scipy.spatial.transform.Rotation.from_quat(grid_rotations[:, [1, 2, 3, 0]])
-        grid_rotations = torch.tensor(grid_rotations.as_matrix(), dtype=torch.float32)
+    grid = Grid(Npix_downsize, apix_downsize)
+    pe_dim = experiment_settings.get("pe_dim", down_side_shape/2)
+    pos_encoding = PositionalEncoding(pe_dim, down_side_shape)
 
 
-    return vae, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
-    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf, circular_mask, grid_rotations
+    return decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
+    scheduler, frequencies.freqs, frequencies.freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf_experiment, use_ctf, circular_mask, grid, pos_encoding, mask_radius
 
 def get_real_spherical_harmonics(coordinates, sphericart_obj, device, l_max):
     """

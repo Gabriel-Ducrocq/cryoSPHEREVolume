@@ -25,8 +25,8 @@ def train(yaml_setting_path, debug_mode):
     :param yaml_setting_path: str, path the yaml containing all the details of the experiment
     :return:
     """
-    vae, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
-        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask, grid_rotations = model.utils.parse_yaml(
+    decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sphericartObj, unique_radiuses, radius_indexes, experiment_settings, device, \
+        scheduler, freqs, freqs_volume, l_max, spherical_harmonics, wigner_calculator, ctf, use_ctf, circular_mask, grid, pos_encoding, mask_radius = model.utils.parse_yaml(
         yaml_setting_path)
     if experiment_settings["resume_training"]["model"] != "None":
         name = f"experiment_{experiment_settings['name']}_resume"
@@ -63,7 +63,7 @@ def train(yaml_setting_path, debug_mode):
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
         start_tot = time()
-        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation) in enumerate(data_loader):
+        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables) in enumerate(data_loader):
             start_batch = time()
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
@@ -77,37 +77,25 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
+            mask = circular_mask.get_mask(mask_radius)
+            rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1])
+            coordinates_embedding = pos_encoding(rotated_grid)
 
-            latent_variables, latent_mean, latent_std = vae.sample_latent(flattened_batch_images)
-            #### !!!!!!! SETTING THE LATENT VARIABLES TO 0 !!!!!!!!!!! #####
-            latent_variables = torch.zeros_like(latent_variables)
-            alms_per_radius = vae.decode(latent_variables)
-            #alms_per_radius = vae.decode(unique_radiuses[None, :, None].repeat(batch_size, 1, 1))
-            alms_per_coordinate = utils.alm_from_radius_to_coordinate(alms_per_radius, radius_indexes)
-            if grid_rotations is None:
-                start_wigner = time()
+            decoder_input = torch.cat([coordinates_embedding, batch_latent_variables[:, None, :].expand(-1, rotated_grid.shape[1], -1)], dim=-1)
+            decoded_images = decoder(decoder_input)
+            predicted_images = torch.zeros((batch_size, batch_images.shape[1]*batch_images.shape[2]), dtype=torch.float32, device=device)
+            predicted_images[mask==1] = decoded_images
 
-                all_wigner = wigner_calculator.compute_wigner_D(l_max, batch_poses, device)
-                #all_wigner = utils.compute_wigner_D(l_max, batch_poses, device)
-                end_wigner = time()
-                start_apply = time()
-                rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-                end_apply = time()
-                predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
-                if use_ctf:
-                    batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
-                else:
-                    batch_predicted_images = predicted_images
+            if use_ctf:
+                batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
-                poses_min, reconstruction_errors, batch_predicted_images = pose_search.perform_pose_search(batch_translated_images_hartley, grid_wigner, latent_mean, latent_std, spherical_harmonics,
-                    experiment_settings, tracking_metrics, alms_per_coordinate.detach(), circular_mask, radius_indexes, ctf, use_ctf, grid_rotations, l_max, device, wigner_calculator, indexes)
-                all_wigner = wigner_calculator.compute_wigner_D(l_max, poses_min, device)
-                rotated_spherical_harmonics = utils.apply_wigner_D(all_wigner, spherical_harmonics, l_max)
-                predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
-                if use_ctf:
-                    batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
-                else:
-                    batch_predicted_images = predicted_images
+                batch_predicted_images = predicted_images
+
+            predicted_images = utils.spherical_synthesis_hartley(alms_per_coordinate, rotated_spherical_harmonics, circular_mask.mask, radius_indexes, device)
+            if use_ctf:
+                batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
+            else:
+                batch_predicted_images = predicted_images
 
 
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, latent_mean, latent_std, experiment_settings,
@@ -115,12 +103,6 @@ def train(yaml_setting_path, debug_mode):
             print("NLL", nll)
             start_grad = time()
             nll.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            end_grad = time()
-            end_batch = time()
-            print("Time total:", end_batch - start_batch)
-            print("Gradient time:", end_grad - start_grad)
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)

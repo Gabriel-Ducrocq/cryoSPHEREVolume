@@ -9,13 +9,14 @@ from pytorch3d.transforms import euler_angles_to_matrix
 
 
 class ImageDataSet(Dataset):
-    def __init__(self, apix, side_shape, particles_df, particles_path, down_side_shape=None, down_method="interp", invert_data=True):
+    def __init__(self, apix, side_shape, particles_df, particles_path, latent_variables_path, down_side_shape=None, down_method="interp", invert_data=True):
         """
         #Create a dataset of images and poses
         #:param apix: float, size of a pixel in Å.
         #:param side_shape: integer, number of pixels on each side of a picture. So the picture is a side_shape x side_shape array
         #:param particle_df: particles dataframe coming from a star file
         #:particles_path: string, path to the folder containing the mrcs files. It is appended to the path present in the star file.
+        #:latent_variables_path: str, path to the latent variables. The latent variables file must be ordered in the same way as the starfile.
         #:param down_side_shape: integer, number of pixels of the downsampled images. If no downampling, set down_side_shape = side_shape.
         """
 
@@ -24,6 +25,8 @@ class ImageDataSet(Dataset):
         self.apix = apix
         self.particles_path = particles_path
         self.particles_df = particles_df
+        self.latent_variables = np.load(latent_variables_path)
+        assert self.latent_variables.shape[0] == self.particles_df.shape[0], f"{self.latent_variables.shape[0]} latent variables for {self.particles_df.shape[0]} images."
         print(particles_df.columns)
         #Reading the euler angles and turning them into rotation matrices.
         euler_angles_degrees = particles_df[["rlnAngleRot", "rlnAngleTilt", "rlnAnglePsi"]].values
@@ -114,4 +117,4 @@ class ImageDataSet(Dataset):
         #    print("INVERTING")
         #    proj *= -1
 
-        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix
+        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx]

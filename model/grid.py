@@ -20,7 +20,16 @@ class Grid(torch.nn.Module):
         super().__init__()
         self.apix = apix
         self.side_shape = side_shape
-        ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))
+        #Since the theoretical Fourier transform is periodic of period 1/apix, it means we are sampling on an interval [-1/2apix, 1/2apix] for odd size or
+        # [-1/2apix, -1/2apix[ for even sizes. In any case, the highest frequency in absolue value is 1/2apix. So we should divide by 1/2apix to recover an interval [-1, 1].
+        #Since we apply a fftshift, the 0 frequency is at the center.
+        if side_shape % 2 == 0
+            extent = 1/(2*apix)
+            ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
+        else:
+            extent = (side_shape-1)/(2*side_shape*apix)
+            ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
+
         mx, my = torch.meshgrid(ax, ax, indexing="xy")
         freqs = torch.stack([mx.flatten(), my.flatten(), torch.zeros(side_shape**2, dtype=torch.float32)], 1)
         self.register_buffer("freqs", freqs)
@@ -50,7 +59,14 @@ class Mask(torch.nn.Module):
         self.radius = radius
         self.side_shape = side_shape
         self.apix = apix
-        ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))
+
+        if side_shape % 2 == 0
+            extent = 1/(2*apix)
+            ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
+        else:
+            extent = (side_shape-1)/(2*side_shape*apix)
+            ax = torch.fft.fftshift(torch.fft.fftfreq(self.side_shape, self.apix))/extent
+
         self.extent = np.abs(ax[0])
         mx, my = torch.meshgrid(ax, ax, indexing="xy")
         self.freqs = torch.stack([mx.flatten(), my.flatten(), torch.zeros(side_shape**2, dtype=torch.float32)], 1)
@@ -65,6 +81,7 @@ class Mask(torch.nn.Module):
         self.register_buffer("mask_volume", mask_volume.to(device))
 
         self.masks_2d = {}
+        self.masks_2d[self.radius] = mask
 
     def get_mask(self, radius):
         if radius in self.masks_2d:
@@ -84,6 +101,95 @@ class Mask(torch.nn.Module):
         mask = mask.reshape(self.side_shape, self.side_shape)
         plt.imshow(mask)
         plt.show()
+
+
+
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, pe_dim=6, D=128, pe_type="geo", include_input=False):
+        """
+        Initilization of a positional encoder.
+
+        Parameters
+        ----------
+        num_encoding_functions: int
+        include_input: bool
+        normalize: bool
+        input_dim: int
+        gaussian_pe: bool
+        gaussian_std: float
+        """
+        super().__init__()
+        self.pe_dim = pe_dim
+        self.include_input = include_input
+        self.pe_type = pe_type
+        self.D = D
+
+        if self.pe_type == "gau1":
+            self.gaussian_weights = nn.Parameter(torch.randn(3 * self.pe_dim, 3) * D / 4, requires_grad=False)
+        elif self.pe_type == "gau2":
+            # FTPositionalDecoder (https://github.com/zhonge/cryodrgn/blob/master/cryodrgn/models.py)
+            # __init__():
+            #   rand_freqs = randn * 0.5
+            # random_fourier_encoding():
+            #   freqs = rand_freqs * coords * D/2
+            # decode()/eval_volume():
+            #   extent < 0.5 -> coords are in (-0.5, 0.5), while in cryostar coords are in (-1, 1)
+            self.gaussian_weights = nn.Parameter(torch.randn(3 * self.pe_dim, 3) * D / 8, requires_grad=False)
+        elif self.pe_type == "geo1":
+            # frequency: (1, D), wavelength: (2pi/D, 2pi)
+            f = D
+            self.frequency_bands = nn.Parameter(f * (1. / f)**(torch.arange(self.pe_dim) / (self.pe_dim - 1)),
+                                                requires_grad=False)
+        elif self.pe_type == "geo2":
+            # frequency: (1, D*pi)
+            f = D * np.pi
+            self.frequency_bands = nn.Parameter(f * (1. / f)**(torch.arange(self.pe_dim) / (self.pe_dim - 1)),
+                                                requires_grad=False)
+        elif self.pe_type == "no":
+            pass
+        else:
+            raise NotImplemented
+
+    def __repr__(self):
+        return str(self.__class__.__name__) + f"({self.pe_type}, num={self.pe_dim})"
+
+    def out_dim(self):
+        if self.pe_type == "no":
+            return 3
+        else:
+            ret = 3 * 2 * self.pe_dim
+            if self.include_input:
+                ret += 3
+            return ret
+
+    def forward(self, tensor):
+        """
+        tensor is a torch tensor of size (batch_size, n_coordinates, 3)
+        return a tensor of shape (batch_size, n_coordinates, 3*pe_dimension) if self.include input is False, else (batch_size, n_coordinates, 3*pe_dimension + 3)
+        """
+        with torch.autocast("cuda", enabled=False):
+            assert tensor.dtype == torch.float32
+            if self.pe_type == "no":
+                return tensor
+
+            encoding = [tensor] if self.include_input else []
+            if "gau" in self.pe_type:
+                x = torch.matmul(tensor, self.gaussian_weights.T)
+                encoding.append(torch.cos(x))
+                encoding.append(torch.sin(x))
+            elif "geo" in self.pe_type:
+                bsz, num_coords, _ = tensor.shape
+                x = self.frequency_bands[None, None, None, :] * tensor[:, :, :, None]
+                x = x.reshape(bsz, num_coords, -1)
+                encoding.append(torch.cos(x))
+                encoding.append(torch.sin(x))
+
+            ret = torch.cat(encoding, dim=-1)
+
+        return ret
+
 
 
 

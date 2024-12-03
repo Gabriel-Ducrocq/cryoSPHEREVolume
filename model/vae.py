@@ -29,14 +29,12 @@ class VAE(torch.nn.Module):
     def decode(self, latent_variables):
         """
         Decode the latent variables
-        #:param latent_variables: torch.tensor(N_batch, latent_dim)
-        :param latent_variables: torch.tensor(N_batch, N_unique_radiuses, 1)
-        :return: torch.tensor(N_batch, N_unique_radiuses, (l_max + 1)**2)
+        :param latent_variables: torch.tensor(N_batch, n_coords, latent_dim + 3*positional_embedding_dim) or torch.tensor(N_batch, n_coords, latent_dim + 3*positional_embedding_dim+ 3)
+                                if we keep the original coordinates with the positional embedding.
+        :return: torch.tensor(N_batch, n_coords, 1) of decoder evaluated in the coordinates
         """
-        N_batch = latent_variables.shape[0]
-        alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax+1)**2)
-        #alms = self.decoder(latent_variables).reshape(N_batch, -1, (self.lmax + 1) ** 2)
-        return alms
+        return self.decoder(latent_variables)
+
 
 
 
