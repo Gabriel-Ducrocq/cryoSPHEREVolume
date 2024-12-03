@@ -85,7 +85,8 @@ def train(yaml_setting_path, debug_mode):
             decoded_images = decoder(decoder_input)
             predicted_images = torch.zeros((batch_size, batch_images.shape[1]*batch_images.shape[2]), dtype=torch.float32, device=device)
             predicted_images[mask==1] = decoded_images
-
+            predicted_images = predicted_images.reshape(batch_images.shape)
+            
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
