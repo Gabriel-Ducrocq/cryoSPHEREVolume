@@ -124,8 +124,8 @@ def parse_yaml(path):
     image_translator = SpatialGridTranslate(D=Npix_downsize, device=device)
 
     grid = Grid(Npix_downsize, apix_downsize)
-    pe_dim = experiment_settings.get("pe_dim", down_side_shape/2)
-    pos_encoding = PositionalEncoding(pe_dim, down_side_shape)
+    pe_dim = experiment_settings.get("pe_dim", Npix_downsize/2)
+    pos_encoding = PositionalEncoding(pe_dim, pe_dim)
 
 
     return decoder, optimizer, image_translator, dataset, N_epochs, batch_size, sh, unique_radiuses, radius_indexes, experiment_settings, device, \
