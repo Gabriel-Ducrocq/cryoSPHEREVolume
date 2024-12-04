@@ -47,7 +47,7 @@ def train(yaml_setting_path, debug_mode):
             })
     ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
     ####### I LOOK AT THE FIRST 6000 images !!!!! #######
-    data_loader_std = iter(DataLoader(dataset, batch_size=6000, shuffle=False, num_workers=4, drop_last=True))
+    data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=False, num_workers=4, drop_last=True))
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std).to(device)
         images_mean = torch.mean(images_for_std).to(device)
