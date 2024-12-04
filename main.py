@@ -13,6 +13,8 @@ from tqdm import tqdm
 from time import time
 from torch.utils.data import DataLoader
 
+import matplotlib.pyplot as plt
+
 parser_arg = argparse.ArgumentParser()
 parser_arg.add_argument('--experiment_yaml', type=str, required=True)
 parser_arg.add_argument('--debug', type=bool, required=False)
@@ -86,6 +88,9 @@ def train(yaml_setting_path, debug_mode):
             predicted_images[:, mask==1] = decoded_images[:, :, 0]
             print("Decoded image", decoded_images[0, :, 0])
             predicted_images = predicted_images.reshape(batch_images.shape)
+            pred_im = predicted_images[0].detach().cpu().numpy()
+            plt.imshow(pred_im, cmap="gray")
+            plt.savefig("image_non_ctf_corrupted.png")
             print("USE CTF ?", use_ctf)
             if use_ctf:
                 print("I am in the CTFFFFF")
