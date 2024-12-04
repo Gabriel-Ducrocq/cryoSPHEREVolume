@@ -89,9 +89,6 @@ def train(yaml_setting_path, debug_mode):
             print("Decoded image", decoded_images[0, :, 0])
             predicted_images = predicted_images.reshape(batch_images.shape)
             pred_im = predicted_images[0].detach().cpu().numpy()
-            plt.imshow(pred_im, cmap="gray")
-            plt.savefig(f"image_non_ctf_corrupted_{batch_num%100}.png")
-            print("USE CTF ?", use_ctf)
             if use_ctf:
                 print("I am in the CTFFFFF")
                 print(predicted_images.shape)
@@ -109,6 +106,8 @@ def train(yaml_setting_path, debug_mode):
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
+        plt.imshow(pred_im, cmap="gray")
+        plt.savefig(f"image_non_ctf_corrupted.png")
 
         if scheduler:
             scheduler.step()
