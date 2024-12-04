@@ -90,7 +90,7 @@ def train(yaml_setting_path, debug_mode):
             predicted_images = predicted_images.reshape(batch_images.shape)
             pred_im = predicted_images[0].detach().cpu().numpy()
             plt.imshow(pred_im, cmap="gray")
-            plt.savefig("image_non_ctf_corrupted.png")
+            plt.savefig(f"image_non_ctf_corrupted_{batch_num%100}.png")
             print("USE CTF ?", use_ctf)
             if use_ctf:
                 print("I am in the CTFFFFF")
