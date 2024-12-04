@@ -86,7 +86,7 @@ def train(yaml_setting_path, debug_mode):
             predicted_images[:, mask==1] = decoded_images[:, :, 0]
             print("Decoded image", decoded_images[0, :, 0])
             predicted_images = predicted_images.reshape(batch_images.shape)
-
+            print("USE CTF ?", use_ctf)
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
