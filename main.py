@@ -88,6 +88,8 @@ def train(yaml_setting_path, debug_mode):
             predicted_images = predicted_images.reshape(batch_images.shape)
             print("USE CTF ?", use_ctf)
             if use_ctf:
+                print("I am in the CTFFFFF")
+                print(predicted_images.shape)
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
                 batch_predicted_images = predicted_images
