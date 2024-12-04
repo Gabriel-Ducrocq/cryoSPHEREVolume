@@ -25,7 +25,7 @@ class ImageDataSet(Dataset):
         self.apix = apix
         self.particles_path = particles_path
         self.particles_df = particles_df
-        self.latent_variables = np.load(latent_variables_path)
+        self.latent_variables = torch.tensor(np.load(latent_variables_path), dtype=torch.float32)
         assert self.latent_variables.shape[0] == self.particles_df.shape[0], f"{self.latent_variables.shape[0]} latent variables for {self.particles_df.shape[0]} images."
         print(particles_df.columns)
         #Reading the euler angles and turning them into rotation matrices.
