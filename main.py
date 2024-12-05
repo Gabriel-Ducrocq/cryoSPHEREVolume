@@ -96,7 +96,7 @@ def train(yaml_setting_path, debug_mode):
                 batch_predicted_images = predicted_images
 
 
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, tracking_metrics)
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_predicted_particles_path_hartley, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
             nll.backward()

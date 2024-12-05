@@ -53,7 +53,7 @@ def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
                                            - latent_std ** 2, dim=1))
 
 
-def compute_loss(predicted_images, images, tracking_dict, loss_type="correlation"):
+def compute_loss(predicted_images, images, structural_predicted_particles, tracking_dict, loss_type="correlation"):
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
@@ -69,8 +69,12 @@ def compute_loss(predicted_images, images, tracking_dict, loss_type="correlation
         rmsd = calc_cor_loss(images, predicted_images)
     else:
         rmsd = compute_image_loss(images, predicted_images)
-        
-    tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
+
+    #loss_regularization = 0
+    #if structural_predicted_particles is not None:
+    #    rmsd_structural = compute_image_loss(predicted_images, structural_predicted_particles)
+
+    #tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
 
     loss = rmsd
-    return loss
+    return loss #+ rmsd_structural
