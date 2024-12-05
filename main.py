@@ -80,6 +80,7 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
             print("RADIUS MASK", mask_radius)
             mask = circular_mask.get_mask(mask_radius)
+            circular_mask.plot_mask(radius)
             rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1].to(device))
             coordinates_embedding = pos_encoding(rotated_grid)
 

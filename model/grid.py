@@ -101,6 +101,7 @@ class Mask(torch.nn.Module):
 
         mask = mask.reshape(self.side_shape, self.side_shape)
         plt.imshow(mask)
+        plt.savefig("mask.png")
         plt.show()
 
 
