@@ -78,9 +78,7 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
-            print("RADIUS MASK", mask_radius)
             mask = circular_mask.get_mask(mask_radius)
-            #circular_mask.plot_mask(mask_radius)
             rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1].to(device))
             coordinates_embedding = pos_encoding(rotated_grid)
 
@@ -88,19 +86,9 @@ def train(yaml_setting_path, debug_mode):
             decoded_images = decoder(decoder_input)
             predicted_images = torch.zeros((batch_size, batch_images.shape[1]*batch_images.shape[2]), dtype=torch.float32, device=device)
             predicted_images[:, mask==1] = decoded_images[:, :, 0]
-            #mask_plot = mask.reshape(190, 190)
-            #plt.imshow(mask_plot.detach().cpu().numpy())
-            #plt.savefig("mask_slicing.png")
-            print("Decoded image", decoded_images[0, :, 0])
-            print("Decoded image shape", decoded_images.shape)
-            print("Decdoed image non zeros", torch.sum(decoded_images[:, :, 0] != 0, dim=-1))
-            print("Number of non zeros in an image", torch.sum(predicted_images != 0, dim=-1))
-            print("Number of non zeros in mask:", torch.sum(mask))
             predicted_images = predicted_images.reshape(batch_images.shape)
             pred_im = predicted_images[0].detach().cpu().numpy()
             if use_ctf:
-                print("I am in the CTFFFFF")
-                print(predicted_images.shape)
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
                 batch_predicted_images = predicted_images
@@ -115,8 +103,6 @@ def train(yaml_setting_path, debug_mode):
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
-        plt.imshow(pred_im, cmap="gray")
-        plt.savefig(f"image_non_ctf_corrupted.png")
 
         if scheduler:
             scheduler.step()

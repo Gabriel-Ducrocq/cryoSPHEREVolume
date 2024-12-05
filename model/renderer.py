@@ -33,8 +33,8 @@ def apply_ctf(fourier_images, ctf, indexes):
     indexes: torch.tensor(batch_size, type=int)
     return ctf corrupted images
     """
-    print("CTF VALUES:", ctf.compute_ctf(indexes))
-    fourier_images *= -ctf.compute_ctf(indexes)
+
+    fourier_images = -ctf.compute_ctf(indexes)*fourier_images
     return fourier_images
 
 
