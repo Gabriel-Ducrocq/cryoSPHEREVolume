@@ -89,7 +89,7 @@ def train(yaml_setting_path, debug_mode):
             predicted_images = torch.zeros((batch_size, batch_images.shape[1]*batch_images.shape[2]), dtype=torch.float32, device=device)
             predicted_images[:, mask==1] = decoded_images[:, :, 0]
             mask_plot = mask.reshape(190, 190)
-            plot.imshow(mask_plot.detach().cpu().numpy())
+            plt.imshow(mask_plot.detach().cpu().numpy())
             plt.savefig("mask_slicing.png")
             print("Decoded image", decoded_images[0, :, 0])
             predicted_images = predicted_images.reshape(batch_images.shape)
