@@ -1,6 +1,34 @@
 import torch
 import utils
 
+def calc_cor_loss(pred_images, gt_images, mask=None):
+    """
+    Compute the cross-correlation for each pair (predicted_image, true) image in a batch. And average them
+    pred_images: torch.tensor(batch_size, side_shape**2) predicted images
+    gt_images: torch.tensor(batch_size, side_shape**2) of true images, translated according to the poses.
+    return torch.tensor(1) of average correlation accross the batch.
+    """
+    if mask is not None:
+        pred_images = mask(pred_images)
+        gt_images = mask(gt_images)
+        pixel_num = mask.num_masked
+    else:
+        pixel_num = pred_images.shape[-2] * pred_images.shape[-1]
+
+    pred_images = torch.flatten(pred_images, start_dim=-2, end_dim=-1)
+    gt_images = torch.flatten(gt_images, start_dim=-2, end_dim=-1)
+    # b, h, w -> b, num_pix
+    #pred_images = pred_images.flatten(start_dim=2)
+    #gt_images = gt_images.flatten(start_dim=2)
+
+    # b 
+    dots = (pred_images * gt_images).sum(-1)
+    # b -> b 
+    err = -dots / (gt_images.std(-1) + 1e-5) / (pred_images.std(-1) + 1e-5)
+    # b -> 1 value
+    err = err.mean() / pixel_num
+    return err
+
 def compute_image_loss(true_image, predicted_image):
     """
     Compute the mean squared error loss over the batch between true and predicted images, in Hartley space
@@ -25,7 +53,7 @@ def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
                                            - latent_std ** 2, dim=1))
 
 
-def compute_loss(predicted_images, images, tracking_dict):
+def compute_loss(predicted_images, images, tracking_dict, loss_type="correlation"):
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
@@ -37,7 +65,11 @@ def compute_loss(predicted_images, images, tracking_dict):
     """
     print("TRUE IMAGES", images)
     print("PREDICTED IMAGES", predicted_images)
-    rmsd = compute_image_loss(images, predicted_images)
+    if loss_type == "correlaton":
+        rmsd = calc_cor_loss(images, predicted_images)
+    else:
+        rmsd = compute_image_loss(images, predicted_images)
+        
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
 
     loss = rmsd

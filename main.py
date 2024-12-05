@@ -50,7 +50,7 @@ def train(yaml_setting_path, debug_mode):
     ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
     ####### I LOOK AT THE FIRST 6000 images !!!!! #######
     data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=False, num_workers=4, drop_last=True))
-    for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables) in enumerate(data_loader_std):
+    for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables, batch_predicted_particles_path) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std).to(device)
         images_mean = torch.mean(images_for_std).to(device)
         break
@@ -63,7 +63,7 @@ def train(yaml_setting_path, debug_mode):
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
         start_tot = time()
-        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables) in enumerate(data_loader):
+        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_predicted_particles_path) in enumerate(data_loader):
             start_batch = time()
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
@@ -73,6 +73,8 @@ def train(yaml_setting_path, debug_mode):
             batch_images = (batch_images - images_mean)/(images_std + 1e-15)
             batch_poses = batch_poses.to(device)
             flattened_batch_images = batch_images.flatten(start_dim=1, end_dim=2)
+            batch_predicted_particles_path = batch_predicted_particles_path.to(device)
+            batch_predicted_particles_path_hartley = models.utils.real_to_hartley(batch_predicted_particles_path)
             images_real = model.utils.real_to_hartley(batch_images)
             batch_translated_images_real = image_translator.transform(images_real, batch_poses_translation[:, None, :])
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)

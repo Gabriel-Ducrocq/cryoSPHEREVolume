@@ -9,7 +9,7 @@ from pytorch3d.transforms import euler_angles_to_matrix
 
 
 class ImageDataSet(Dataset):
-    def __init__(self, apix, side_shape, particles_df, particles_path, latent_variables_path, down_side_shape=None, down_method="interp", invert_data=True):
+    def __init__(self, apix, side_shape, particles_df, particles_path, latent_variables_path, predicted_particles_path = None, down_side_shape=None, down_method="interp", invert_data=True):
         """
         #Create a dataset of images and poses
         #:param apix: float, size of a pixel in Å.
@@ -25,6 +25,7 @@ class ImageDataSet(Dataset):
         self.apix = apix
         self.particles_path = particles_path
         self.particles_df = particles_df
+        self.predicted_particles_path = predicted_particles_path
         self.latent_variables = torch.tensor(np.load(latent_variables_path), dtype=torch.float32)
         assert self.latent_variables.shape[0] == self.particles_df.shape[0], f"{self.latent_variables.shape[0]} latent variables for {self.particles_df.shape[0]} images."
         print(particles_df.columns)
@@ -117,4 +118,4 @@ class ImageDataSet(Dataset):
         #    print("INVERTING")
         #    proj *= -1
 
-        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx]
+        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx], self.predicted_particles_path[idx]
