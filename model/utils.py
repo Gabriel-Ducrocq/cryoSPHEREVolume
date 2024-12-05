@@ -333,6 +333,10 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     real_image_again_wandb = wandb.Image(real_image_again[0].detach().cpu().numpy()[:, :, None], caption="Round trip real to Hartley")
     true_image_ony_real_wandb = wandb.Image(real_image[0].detach().cpu().numpy()[:, :, None],
                                          caption="Original image")
+
+    true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
+    predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
+
     pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
     print("PRED IM", pred_im.shape)
     predicted_image_wandb = wandb.Image(pred_im,
@@ -340,6 +344,8 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     wandb.log({"Images/true_image": real_image_again_wandb})
     wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
     wandb.log({"Images/predicted_image": predicted_image_wandb})
+    wandb.log({"Images/true_image_hartley": true_image_hartley})
+    wandb.log({"Images/predicted_image_hartley": predicted_image_hartley})
 
     #predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
     #true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
