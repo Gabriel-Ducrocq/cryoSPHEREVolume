@@ -93,7 +93,7 @@ def train(yaml_setting_path, debug_mode):
             #plt.savefig("mask_slicing.png")
             print("Decoded image", decoded_images[0, :, 0])
             print("Decoded image shape", decoded_images.shape)
-            print("Decdoed image non zeros", torch.sum(decoded_images != 0, dim=-1))
+            print("Decdoed image non zeros", torch.sum(decoded_images[:, :, 0] != 0, dim=-1))
             print("Number of non zeros in an image", torch.sum(predicted_images != 0, dim=-1))
             print("Number of non zeros in mask:", torch.sum(mask))
             predicted_images = predicted_images.reshape(batch_images.shape)
