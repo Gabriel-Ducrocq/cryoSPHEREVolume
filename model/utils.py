@@ -307,7 +307,7 @@ def hartley_transform_3d(volume):
     hartley_volume = fourier_volume.real - fourier_volume.imag
     return hartley_volume
 
-def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=None, true_images=None, predicted_images=None, real_image=None,
+def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=None, true_images=None, predicted_images=None, structural_predicted_images = None, real_image=None,
                      images_mean = None, images_std = None):
     """
     Monitors the training process through wandb and saving masks and models
@@ -339,14 +339,13 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
 
     pred_im = real_predicted_image[0].detach().cpu().numpy()[:, :, None]
-    print("PRED IM", pred_im.shape)
     predicted_image_wandb = wandb.Image(pred_im,
                                          caption="Predicted images")
+    structural_pred_im_wandb = wandb.Image(structural_predicted_images[0].detach().cpu().numpy(), caption="Image predicted by the structural method")
     wandb.log({"Images/true_image": real_image_again_wandb})
     wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
     wandb.log({"Images/predicted_image": predicted_image_wandb})
-    wandb.log({"Images/true_image_hartley": true_image_hartley})
-    wandb.log({"Images/predicted_image_hartley": predicted_image_hartley})
+    wandb.log({"Images/structural_method_image": structural_pred_im_wandb})
 
     #predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
     #true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")

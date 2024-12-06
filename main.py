@@ -114,7 +114,7 @@ def train(yaml_setting_path, debug_mode):
         if not debug_mode:
             model.utils.monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=device,
                     true_images=non_standardized, predicted_images=predicted_images.flatten(start_dim=1, end_dim=2), real_image=original_images,
-                                         images_mean=images_mean, images_std=images_std)
+                                         images_mean=images_mean, images_std=images_std, structural_predicted_images=batch_structural_predicted_images)
 
 
 if __name__ == '__main__':
