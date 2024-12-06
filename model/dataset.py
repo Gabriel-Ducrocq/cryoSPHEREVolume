@@ -118,8 +118,32 @@ class ImageDataSet(Dataset):
         #    print("INVERTING")
         #    proj *= -1
 
-        predicted_particles_path = None
+        #       !!!!!!!!!!!!!        FOR NOW, THE PREDICTED PARTICLES NEED TO BE ORDERED IN THE SAME WAY AS THE STAR FILE    !!!!!!
         if self.predicted_particles_path is not None:
-            predicted_particles_path = self.predicted_particles_path[idx]
+            try:
+                with mrcfile.mmap(self.predicted_particles_path, mode="r", permissive=True) as mrc:
+                    if mrc.data.ndim > 2:
+                        predicted_proj = torch.from_numpy(np.array(mrc.data[idx])).float() #* self.cfg.scale_images
+                    else:
+                        # the mrcs file can contain only one particle
+                        predicted_proj = torch.from_numpy(np.array(mrc.data)).float() #* self.cfg.scale_images
 
-        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx], predicted_particles_path
+                # get (1, side_shape, side_shape) proj
+            if len(predicted_proj.shape) == 2:
+                predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
+            else:
+                assert len(predicted_proj.shape) == 3 and predicted_proj.shape[0] == 1  # some starfile already have a dummy channel
+
+            if self.down_side_shape != self.side_shape:
+                if self.down_method == "interp":
+                    predicted_proj = tvf.resize(predicted_proj, [self.down_side_shape, ] * 2, antialias=True)
+                #elif self.down_method == "fft":
+                #    proj = downsample_2d(proj[0, :, :], self.down_side_shape)[None, :, :]
+                else:
+                    raise NotImplementedError
+
+
+
+
+
+        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx], predicted_proj
