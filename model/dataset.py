@@ -138,8 +138,8 @@ class ImageDataSet(Dataset):
                 predicted_proj = tvf.resize(predicted_proj, [self.down_side_shape, ] * 2, antialias=True)
                 #elif self.down_method == "fft":
                 #    proj = downsample_2d(proj[0, :, :], self.down_side_shape)[None, :, :]
-        else:
-            raise NotImplementedError
+            else:
+                raise NotImplementedError
 
         #except Exception as e:
         #    print(f"WARNING: Particle image {self.predicted_particles_path} invalid! Setting to zeros.")
