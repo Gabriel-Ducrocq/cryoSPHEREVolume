@@ -127,17 +127,17 @@ class ImageDataSet(Dataset):
                     # the mrcs file can contain only one particle
                     predicted_proj = torch.from_numpy(np.array(mrc.data)).float() #* self.cfg.scale_images
 
-        # get (1, side_shape, side_shape) proj
-        if len(predicted_proj.shape) == 2:
-            predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
-        else:
-            assert len(predicted_proj.shape) == 3 and predicted_proj.shape[0] == 1  # some starfile already have a dummy channel
+            # get (1, side_shape, side_shape) proj
+            if len(predicted_proj.shape) == 2:
+                predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
+            else:
+                assert len(predicted_proj.shape) == 3 and predicted_proj.shape[0] == 1  # some starfile already have a dummy channel
 
-        if self.down_side_shape != self.side_shape:
-            if self.down_method == "interp":
-                predicted_proj = tvf.resize(predicted_proj, [self.down_side_shape, ] * 2, antialias=True)
-            #elif self.down_method == "fft":
-            #    proj = downsample_2d(proj[0, :, :], self.down_side_shape)[None, :, :]
+            if self.down_side_shape != self.side_shape:
+                if self.down_method == "interp":
+                    predicted_proj = tvf.resize(predicted_proj, [self.down_side_shape, ] * 2, antialias=True)
+                    #elif self.down_method == "fft":
+                    #    proj = downsample_2d(proj[0, :, :], self.down_side_shape)[None, :, :]
             else:
                 raise NotImplementedError
 
