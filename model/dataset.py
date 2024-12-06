@@ -122,4 +122,4 @@ class ImageDataSet(Dataset):
         if self.predicted_particles_path is not None:
             predicted_particles_path = self.predicted_particles_path[idx]
 
-        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx] #, predicted_particles_path
+        return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx], predicted_particles_path

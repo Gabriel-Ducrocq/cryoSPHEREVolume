@@ -50,20 +50,22 @@ def train(yaml_setting_path, debug_mode):
     ############ MODIFYING THINGS TO OVERFIT ONE IMAGES ONLY !!! ###########
     ####### I LOOK AT THE FIRST 6000 images !!!!! #######
     data_loader_std = iter(DataLoader(dataset, batch_size=5000, shuffle=False, num_workers=4, drop_last=True))
-    for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables) in enumerate(data_loader_std):
+    for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std).to(device)
         images_mean = torch.mean(images_for_std).to(device)
+        structural_images_std = torch.std(batch_structural_predicted_images).to(device)
+        structural_images_mean = torch.mean(batch_structural_predicted_images).to(device)
         break
 
     for epoch in range(N_epochs):
         print("Epoch number:", epoch)
-        tracking_metrics = {"rmsd": [], "kl_prior_latent": []}
+        tracking_metrics = {"rmsd": [], "kl_prior_latent": [], "rmsd_structural":[]}
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
         data_loader = tqdm(
             iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
         start_tot = time()
-        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables) in enumerate(data_loader):
+        for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader):
             start_batch = time()
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
@@ -78,6 +80,8 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
+            batch_structural_predicted_images = (batch_structural_predicted_images.to(device) - structural_images_mean)/(structural_images_std + 1e-15)
+
             mask = circular_mask.get_mask(mask_radius)
             rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1].to(device))
             coordinates_embedding = pos_encoding(rotated_grid)
@@ -94,7 +98,7 @@ def train(yaml_setting_path, debug_mode):
                 batch_predicted_images = predicted_images
 
 
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, None, tracking_metrics)
+            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_structural_predicted_images, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
             nll.backward()

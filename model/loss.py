@@ -63,18 +63,19 @@ def compute_loss(predicted_images, images, structural_predicted_particles, track
     :param loss_weights: dict, containing the strength of losses for each loss
     :return:
     """
-    print("TRUE IMAGES", images)
-    print("PREDICTED IMAGES", predicted_images)
     if loss_type == "correlaton":
         rmsd = calc_cor_loss(images, predicted_images)
     else:
         rmsd = compute_image_loss(images, predicted_images)
 
-    #loss_regularization = 0
-    #if structural_predicted_particles is not None:
-    #    rmsd_structural = compute_image_loss(predicted_images, structural_predicted_particles)
+    loss_regularization = 0
+    if structural_predicted_particles is not None:
+        predicted_images = predicted_images.reshape(structural_predicted_particles.shape)
+        predicted_images_real = utils.real_to_hartley(predicted_images)
+        rmsd_structural = compute_image_loss(predicted_images.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
 
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
+    tracking_dict["rmsd_structural"].append(rmsd_structural.detach().numpy().cpu())
 
     loss = rmsd
-    return loss #+ rmsd_structural
+    return loss + 0.5*rmsd_structural
