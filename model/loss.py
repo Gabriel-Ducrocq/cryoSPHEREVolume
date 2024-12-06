@@ -72,6 +72,7 @@ def compute_loss(predicted_images, images, structural_predicted_particles, predi
     loss_regularization = 0
     if structural_predicted_particles is not None:
         predicted_images_real = utils.real_to_hartley(predicted_images_no_ctf)
+        print("Structural shape", structural_predicted_particles.shape)
         im_example = structural_predicted_particles[0].detach().cpu().numpy()
         plt.imshow(im_example)
         plt.savefig("image_reg.png")
