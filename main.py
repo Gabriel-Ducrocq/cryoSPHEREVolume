@@ -104,7 +104,6 @@ def train(yaml_setting_path, debug_mode):
             nll.backward()
             optimizer.step()
             optimizer.zero_grad()
-            break
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
