@@ -53,7 +53,7 @@ def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
                                            - latent_std ** 2, dim=1))
 
 
-def compute_loss(predicted_images, images, structural_predicted_particles, tracking_dict, loss_type="correlation"):
+def compute_loss(predicted_images, images, structural_predicted_particles, predicted_images_no_ctf, tracking_dict, loss_type="correlation"):
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
@@ -70,9 +70,8 @@ def compute_loss(predicted_images, images, structural_predicted_particles, track
 
     loss_regularization = 0
     if structural_predicted_particles is not None:
-        predicted_images = predicted_images.reshape(structural_predicted_particles.shape)
-        predicted_images_real = utils.real_to_hartley(predicted_images)
-        rmsd_structural = compute_image_loss(predicted_images.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
+        predicted_images_real = utils.real_to_hartley(predicted_images_no_ctf)
+        rmsd_structural = compute_image_loss(predicted_images_real.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
 
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
     tracking_dict["rmsd_structural"].append(rmsd_structural.detach().cpu().numpy())
