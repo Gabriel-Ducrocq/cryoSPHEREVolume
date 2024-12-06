@@ -128,7 +128,7 @@ class ImageDataSet(Dataset):
                         # the mrcs file can contain only one particle
                         predicted_proj = torch.from_numpy(np.array(mrc.data)).float() #* self.cfg.scale_images
 
-                # get (1, side_shape, side_shape) proj
+            # get (1, side_shape, side_shape) proj
             if len(predicted_proj.shape) == 2:
                 predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
             else:
