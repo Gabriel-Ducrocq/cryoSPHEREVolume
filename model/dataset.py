@@ -129,10 +129,10 @@ class ImageDataSet(Dataset):
                         predicted_proj = torch.from_numpy(np.array(mrc.data)).float() #* self.cfg.scale_images
 
             # get (1, side_shape, side_shape) proj
-            if len(predicted_proj.shape) == 2:
-                predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
-            else:
-                assert len(predicted_proj.shape) == 3 and predicted_proj.shape[0] == 1  # some starfile already have a dummy channel
+            #if len(predicted_proj.shape) == 2:
+            #    predicted_proj = predicted_proj[None, :, :]  # add a dummy channel (for consistency w/ img fmt)
+            #else:
+            #    assert len(predicted_proj.shape) == 3 and predicted_proj.shape[0] == 1  # some starfile already have a dummy channel
 
             if self.down_side_shape != self.side_shape:
                 if self.down_method == "interp":
