@@ -71,12 +71,8 @@ def compute_loss(predicted_images, images, structural_predicted_particles, predi
 
     loss_regularization = 0
     if structural_predicted_particles is not None:
-        print("IMAGES NO CTF SHAPE",predicted_images_no_ctf.shape)
         predicted_images_real = utils.real_to_hartley(predicted_images_no_ctf)
         print("Structural shape", structural_predicted_particles.shape)
-        im_example = structural_predicted_particles[0].detach().cpu().numpy()
-        plt.imshow(im_example)
-        plt.savefig("image_reg.png")
         rmsd_structural = compute_image_loss(predicted_images_real.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
 
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())

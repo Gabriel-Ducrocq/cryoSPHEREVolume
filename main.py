@@ -67,6 +67,7 @@ def train(yaml_setting_path, debug_mode):
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader):
             print("BATCH STRUCTURAL PREDICTED SHAPE", batch_structural_predicted_images.shape)
+            batch_structural_predicted_images = batch_structural_predicted_images[:, 0, :, :]
             start_batch = time()
             original_images = original_images.to(device)
             batch_images = batch_images.to(device)
