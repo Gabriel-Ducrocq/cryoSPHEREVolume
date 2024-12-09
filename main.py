@@ -100,7 +100,16 @@ def train(yaml_setting_path, debug_mode):
             else:
                 batch_predicted_images = predicted_images
 
-            nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_structural_predicted_images, predicted_images, tracking_metrics)
+            nll = torch.mean(torch.mean((predicted_images.flatten(start_dim=-2, end_dim=-1) 
+                    - utils.real_to_hartley(batch_structural_predicted_images).flatten(start_dim=-2, end_dim=-1))**2, dim=-1))
+
+            plt.imshow(predicted_images[0].detach().cpu().numpy())
+            plt.savefig("predicted_no_ctf.png")
+            plt.imshow(batch_structural_predicted_images[0].detach().cpu().numpy())
+            plt.savefig("structural_ht.png")
+
+            tracking_dict["rmsd_structural"].append(nll.detach().cpu().numpy())
+            #nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_structural_predicted_images, predicted_images, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
             nll.backward()
