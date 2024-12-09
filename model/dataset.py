@@ -146,5 +146,5 @@ class ImageDataSet(Dataset):
         #    print(e)
         #    predicted_proj = torch.zeros(self.down_side_shape, self.down_side_shape)
 
-
+        print("PREDICTED PROJ", predicted_proj.shape)
         return idx, proj, hartley_proj, self.poses[idx], self.poses_translation[idx]/self.down_apix, self.latent_variables[idx], predicted_proj
