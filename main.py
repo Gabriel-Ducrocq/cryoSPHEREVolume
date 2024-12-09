@@ -61,9 +61,9 @@ def train(yaml_setting_path, debug_mode):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": [], "rmsd_structural":[]}
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
-        #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DO NOT SHUFFLE AND MAKE ONLY ONE BATCH PER EPOCH !!!!!!!!!!!!!!!!!!!!! ############
+        #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DO NOT SHUFFLE AND MAKE ONLY ONE BATCH PER EPOCH  AND BATCH SIZE 1 !!!!!!!!!!!!!!!!!!!!!!!!! ############
         data_loader = tqdm(
-            iter(DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)))
+            iter(DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4, drop_last=True)))
 
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader):
