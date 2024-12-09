@@ -69,7 +69,6 @@ def compute_loss(predicted_images, images, structural_predicted_particles_ht, pr
     else:
         rmsd = compute_image_loss(images, predicted_images)
 
-
     loss_regularization = 0
     if structural_predicted_particles_ht is not None:
         rmsd_structural = compute_image_loss(predicted_images_no_ctf.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles_ht.flatten(start_dim=-2, end_dim=-1))
