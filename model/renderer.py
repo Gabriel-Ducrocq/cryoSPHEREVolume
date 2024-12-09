@@ -34,8 +34,8 @@ def apply_ctf(fourier_images, ctf, indexes):
     return ctf corrupted images
     """
 
-    fourier_images = -ctf.compute_ctf(indexes)*fourier_images
-    return fourier_images
+    ctf_corrupted_fourier_images = -ctf.compute_ctf(indexes)*fourier_images
+    return ctf_corrupted_fourier_images
 
 
 class SpatialGridTranslate(torch.nn.Module):
