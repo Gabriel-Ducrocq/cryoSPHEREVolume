@@ -77,6 +77,9 @@ def compute_loss(predicted_images, images, structural_predicted_particles, predi
         plt.savefig("predicted_no_ctf.png")
         plt.imshow(structural_predicted_particles[0].detach().cpu().numpy())
         plt.savefig("structural_ht.png")
+        print("PRINTING SHAPES")
+        print(predicted_images_no_ctf.shape)
+        print(structural_predicted_particles.shape)
         rmsd_structural = compute_image_loss(predicted_images_no_ctf.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
 
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
