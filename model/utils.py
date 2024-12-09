@@ -351,7 +351,7 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     wandb.log({"Images/predicted_image": predicted_image_wandb})
     #wandb.log({"Images/structural_method_image": structural_pred_im_wandb})
     wandb.log({"Images/predicted_image_no_ht": predicted_images_in_real})
-    wandb.log({"Images/image_ht_structuraö": structural_pred_ht})
+    wandb.log({"Images/image_ht_structural": structural_pred_ht})
 
     #predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
     #true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
