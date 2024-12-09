@@ -73,7 +73,7 @@ def compute_loss(predicted_images, images, structural_predicted_particles, predi
     if structural_predicted_particles is not None:
         predicted_images_real = utils.real_to_hartley(predicted_images_no_ctf)
         print("Structural shape", structural_predicted_particles.shape)
-        im_pred = predicted_images_no_ctf[0].detach().cpu().numpy()
+        im_pred = structural_predicted_particles[0].detach().cpu().numpy()
         plt.imshow(im_pred)
         plt.savefig("pred_struct.png")
         rmsd_structural = compute_image_loss(predicted_images_real.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
