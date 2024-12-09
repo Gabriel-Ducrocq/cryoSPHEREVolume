@@ -321,8 +321,8 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     side_shape = int(np.sqrt(predicted_images.shape[1]))
     batch_size = predicted_images.shape[0]
     predicted_images = predicted_images.reshape(batch_size, side_shape, side_shape)
-    predicted_images*=(images_std + 1e-15)
-    predicted_images+= images_mean
+    #predicted_images*=(images_std + 1e-15)
+    #predicted_images+= images_mean
     real_predicted_image = real_to_hartley(predicted_images[:1])
 
     true_images = true_images.reshape(batch_size, side_shape, side_shape)
