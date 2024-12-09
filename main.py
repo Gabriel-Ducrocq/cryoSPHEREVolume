@@ -80,7 +80,6 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
-            print("BATCH STRUCTURAL IMAGE", batch_structural_predicted_images.shape)
             batch_structural_predicted_images = (batch_structural_predicted_images.to(device) - structural_images_mean)/(structural_images_std + 1e-15)
 
             mask = circular_mask.get_mask(mask_radius)
