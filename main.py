@@ -62,10 +62,8 @@ def train(yaml_setting_path, debug_mode):
         print("Epoch number:", epoch)
         tracking_metrics = {"rmsd": [], "kl_prior_latent": [], "rmsd_structural":[]}
         #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DROP LAST !!!!!! ##################################
-        #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! DO NOT SHUFFLE AND MAKE ONLY ONE BATCH PER EPOCH  AND BATCH SIZE 1 !!!!!!!!!!!!!!!!!!!!!!!!! ############
-        batch_size = 1
         data_loader = tqdm(
-            iter(DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=True)))
+            iter(DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)))
 
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader):
@@ -125,7 +123,6 @@ def train(yaml_setting_path, debug_mode):
             nll.backward()
             optimizer.step()
             optimizer.zero_grad()
-            break
 
         end_tot = time()
         print("TOTAL TIME", end_tot - start_tot)
@@ -133,11 +130,10 @@ def train(yaml_setting_path, debug_mode):
         if scheduler:
             scheduler.step()
 
-        if epoch % 10 == 0:
-            if not debug_mode:
-                model.utils.monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=device,
-                        true_images=non_standardized, predicted_images=predicted_images.flatten(start_dim=1, end_dim=2), real_image=original_images,
-                                             images_mean=images_mean, images_std=images_std, structural_predicted_images=batch_structural_predicted_images)
+        if not debug_mode:
+            model.utils.monitor_training(decoder, tracking_metrics, epoch, experiment_settings, optimizer, device=device,
+                    true_images=non_standardized, predicted_images=predicted_images.flatten(start_dim=1, end_dim=2), real_image=original_images,
+                                         images_mean=images_mean, images_std=images_std, structural_predicted_images=batch_structural_predicted_images)
 
 
 if __name__ == '__main__':
