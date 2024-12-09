@@ -99,6 +99,9 @@ def train(yaml_setting_path, debug_mode):
                 batch_predicted_images = predicted_images
 
 
+            test = batch_structural_predicted_images[0].detach().cpu().numpy()
+            plt.imshow(test)
+            plt.savefig("pred_struct_before_function.png")
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, batch_structural_predicted_images, predicted_images, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
