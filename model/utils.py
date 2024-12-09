@@ -324,7 +324,7 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     #predicted_images*=(images_std + 1e-15)
     #predicted_images+= images_mean
     real_predicted_image = real_to_hartley(predicted_images[:1])
-    structural_pred_ht = utils.real_to_hartley(structural_predicted_images)[0].detach().cpu().numpy()
+    structural_pred_ht = real_to_hartley(structural_predicted_images)[0].detach().cpu().numpy()
 
     true_images = true_images.reshape(batch_size, side_shape, side_shape)
     real_image_again = real_to_hartley(true_images[:1])
