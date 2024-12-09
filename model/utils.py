@@ -346,7 +346,7 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
 
     predicted_images_in_real = wandb.Image(predicted_images[0].detach().cpu().numpy(), caption="Image predicted without applying HT")
     structural_pred_ht = wandb.Image(structural_pred_ht, caption="Image Structural HT")
-    #wandb.log({"Images/true_image": real_image_again_wandb})
+    wandb.log({"Images/true_image": real_image_again_wandb})
     wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
     wandb.log({"Images/predicted_image": predicted_image_wandb})
     #wandb.log({"Images/structural_method_image": structural_pred_im_wandb})
