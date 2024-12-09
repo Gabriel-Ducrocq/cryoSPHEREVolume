@@ -54,7 +54,7 @@ def compute_KL_prior_latent(latent_mean, latent_std, epsilon_loss):
                                            - latent_std ** 2, dim=1))
 
 
-def compute_loss(predicted_images, images, structural_predicted_particles, predicted_images_no_ctf, tracking_dict, loss_type="correlation"):
+def compute_loss(predicted_images, images, structural_predicted_particles_ht, predicted_images_no_ctf, tracking_dict, loss_type="correlation"):
     """
     Compute the entire loss
     :param predicted_images: torch.tensor(batch_size, side_shape**2), predicted images
@@ -64,28 +64,18 @@ def compute_loss(predicted_images, images, structural_predicted_particles, predi
     :param loss_weights: dict, containing the strength of losses for each loss
     :return:
     """
-    #if loss_type == "correlaton":
-    if False:
+    if loss_type == "correlation":
         rmsd = calc_cor_loss(images, predicted_images)
     else:
         rmsd = compute_image_loss(images, predicted_images)
 
-    #loss_regularization = 0
-    #if structural_predicted_particles is not None:
-    #    #predicted_images_real = utils.real_to_hartley(predicted_images_no_ctf)
-    #    structural_predicted_particles = utils.real_to_hartley(structural_predicted_particles)
-    #    plt.imshow(predicted_images_no_ctf[0].detach().cpu().numpy())
-    #    plt.savefig("predicted_no_ctf.png")
-    #    plt.imshow(structural_predicted_particles[0].detach().cpu().numpy())
-    #    plt.savefig("structural_ht.png")
-    #    print("PRINTING SHAPES")
-    #    print(predicted_images_no_ctf.shape)
-    #    print(structural_predicted_particles.shape)
-    #    rmsd_structural = compute_image_loss(predicted_images_no_ctf.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles.flatten(start_dim=-2, end_dim=-1))
+    loss_regularization = 0
+    if structural_predicted_particles is not None:
+        rmsd_structural = compute_image_loss(predicted_images_no_ctf.flatten(start_dim=-2, end_dim=-1), structural_predicted_particles_ht.flatten(start_dim=-2, end_dim=-1))
 
     tracking_dict["rmsd"].append(rmsd.detach().cpu().numpy())
     #tracking_dict["rmsd_structural"].append(rmsd_structural.detach().cpu().numpy())
 
     loss = rmsd
-    return loss
+    return rmsd_structural
     return 0*loss #+ rmsd_structural
