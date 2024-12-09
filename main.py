@@ -53,8 +53,9 @@ def train(yaml_setting_path, debug_mode):
     for batch_num, (indexes, original_images, images_for_std, batch_poses, _, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader_std):
         images_std = torch.std(images_for_std).to(device)
         images_mean = torch.mean(images_for_std).to(device)
-        structural_images_std = torch.std(batch_structural_predicted_images).to(device)
-        structural_images_mean = torch.mean(batch_structural_predicted_images).to(device)
+        batch_structural_predicted_images_ht = utils.real_to_hartley(batch_structural_predicted_images.to(device))
+        structural_images_std = torch.std(batch_structural_predicted_images_ht).to(device)
+        structural_images_mean = torch.mean(batch_structural_predicted_images_ht).to(device)
         break
 
     for epoch in range(N_epochs):
@@ -84,7 +85,7 @@ def train(yaml_setting_path, debug_mode):
             batch_translated_images_hartley = model.utils.real_to_hartley(batch_translated_images_real)
             batch_translated_images_hartley = (batch_translated_images_hartley - images_mean)/(images_std + 1e-15)
             batch_translated_images_hartley = batch_translated_images_hartley.flatten(start_dim=1, end_dim=2)
-            batch_structural_predicted_images = (batch_structural_predicted_images.to(device) - structural_images_mean)/(structural_images_std + 1e-15)
+            batch_structural_predicted_images_ht = (utils.real_to_hartley(batch_structural_predicted_images.to(device)) - structural_images_mean)/(structural_images_std + 1e-15)
 
             mask = circular_mask.get_mask(mask_radius)
             rotated_grid = rotate_grid(batch_poses, grid.freqs[mask==1].to(device))
@@ -117,7 +118,7 @@ def train(yaml_setting_path, debug_mode):
             ####### I REMOVE THE CTF CORRUPTION !!!!!!! #######
             #nll = loss.compute_loss(predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, 
             #                        batch_structural_predicted_images, predicted_images, tracking_metrics)
-            nll = loss.compute_loss(predicted_images.flatten(start_dim=1, end_dim=2), utils.real_to_hartley(batch_structural_predicted_images).flatten(start_dim=-2, end_dim=-1), 
+            nll = loss.compute_loss(predicted_images.flatten(start_dim=1, end_dim=2), batch_structural_predicted_images_ht.flatten(start_dim=-2, end_dim=-1), 
                                     batch_structural_predicted_images, predicted_images, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
