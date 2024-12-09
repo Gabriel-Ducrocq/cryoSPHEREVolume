@@ -324,6 +324,7 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     #predicted_images*=(images_std + 1e-15)
     #predicted_images+= images_mean
     real_predicted_image = real_to_hartley(predicted_images[:1])
+    structural_pred_ht = utils.real_to_hartley(structural_predicted_images)[0].detach().cpu().numpy()
 
     true_images = true_images.reshape(batch_size, side_shape, side_shape)
     real_image_again = real_to_hartley(true_images[:1])
@@ -344,11 +345,13 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     structural_pred_im_wandb = wandb.Image(structural_predicted_images[0].detach().cpu().numpy(), caption="Image predicted by the structural method")
 
     predicted_images_in_real = wandb.Image(predicted_images[0].detach().cpu().numpy(), caption="Image predicted without applying HT")
+    structural_pred_ht = wandb.Image(structural_pred_ht, caption="Image Structural HT")
     #wandb.log({"Images/true_image": real_image_again_wandb})
     #wandb.log({"Images/true_image_ony_real": true_image_ony_real_wandb})
     wandb.log({"Images/predicted_image": predicted_image_wandb})
     #wandb.log({"Images/structural_method_image": structural_pred_im_wandb})
     wandb.log({"Images/predicted_image_no_ht": predicted_images_in_real})
+    wandb.log({"Images/image_ht_structuraö": structural_pred_ht})
 
     #predicted_image_hartley= wandb.Image(predicted_images[0].detach().cpu().numpy()[:, :, None], caption="Predicted Harltey")
     #true_image_hartley= wandb.Image(true_images[0].detach().cpu().numpy()[:, :, None], caption="True Harltey")
