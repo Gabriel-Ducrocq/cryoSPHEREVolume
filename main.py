@@ -105,7 +105,7 @@ def train(yaml_setting_path, debug_mode):
 
             plt.imshow(predicted_images[0].detach().cpu().numpy())
             plt.savefig("predicted_no_ctf.png")
-            plt.imshow(batch_structural_predicted_images[0].detach().cpu().numpy())
+            plt.imshow(utils.real_to_hartley(batch_structural_predicted_images)[0].detach().cpu().numpy())
             plt.savefig("structural_ht.png")
 
             tracking_metrics["rmsd_structural"].append(nll.detach().cpu().numpy())
