@@ -27,7 +27,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
     decoder = torch.load(model_path)
     decoder.eval()
     mask = circular_mask.get_mask_3d(mask_radius)
-    freqs_eval = grid.freqs_volume[None, mask==1, :]
+    freqs_eval = grid.freqs_volume[None, mask==1, :].to(device)
     coordinates_embedding = pos_encoding(freqs_eval)
     for k, z in enumerate(all_latent_variables):
         decoder_input = torch.cat([coordinates_embedding, z[:, None, :].expand(-1, freqs_eval.shape[1], -1)], dim=-1)
