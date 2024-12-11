@@ -35,7 +35,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
         decoded_volume = decoder(decoder_input)
         predicted_volume = torch.zeros((batch_size, grid.side_shape**3), dtype=torch.float32, device=device)
         predicted_volume[:, mask==1] = decoded_volume[:, :, 0]
-        predicted_volume = predicted_images.reshape(1, grid.side_shape, grid.side_shape, grid.side_shape)
+        predicted_volume = predicted_volume.reshape(1, grid.side_shape, grid.side_shape, grid.side_shape)
         mrc.MRCFile.write(f"{output_path}volume_{k}.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
 
 
