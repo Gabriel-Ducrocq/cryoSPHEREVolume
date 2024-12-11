@@ -84,7 +84,7 @@ class Mask(torch.nn.Module):
         self.masks_2d = {}
         self.masks_3d = {}
         self.masks_2d[self.radius] = mask
-        self.mask_3d[self.radius] = mask_volume
+        self.masks_3d[self.radius] = mask_volume
 
     def get_mask(self, radius):
         if radius in self.masks_2d:
