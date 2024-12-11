@@ -76,13 +76,15 @@ class Mask(torch.nn.Module):
         self.register_buffer("mask", mask.to(device))
 
         mx, my, mz = torch.meshgrid(ax, ax, ax, indexing="xy")
-        freqs_volume = torch.stack([mx.flatten(), my.flatten(), mz.flatten()], 1)
-        radiuses_volume = torch.sqrt(torch.sum(freqs_volume[:, :2]**2, axis=-1))
-        mask_volume = radiuses_volume < self.radius/(self.side_shape//2) * self.extent
+        self.freqs_volume = torch.stack([mx.flatten(), my.flatten(), mz.flatten()], 1)
+        self.radiuses_volume = torch.sqrt(torch.sum(freqs_volume[:, :]**2, axis=-1))
+        mask_volume = self.radiuses_volume < self.radius/(self.side_shape//2) * self.extent
         self.register_buffer("mask_volume", mask_volume.to(device))
 
         self.masks_2d = {}
+        self.masks_3d = {}
         self.masks_2d[self.radius] = mask
+        self.mask_3d[self.radius] = mask_volume
 
     def get_mask(self, radius):
         if radius in self.masks_2d:
@@ -92,6 +94,16 @@ class Mask(torch.nn.Module):
         mask = self.freq_radiuses < radius/(self.side_shape//2) * self.extent
         self.masks_2d[radius] = mask
         return mask
+
+    def get_mask_3d(self, radius):
+        if radius in self.masks_3d:
+            return self.masks_3d[radius]
+
+        assert 2*radius + 1 < self.side_shape, f"Mask with radius {radius} is too large for image of size {self.side_shape}x{self.side_shape}."
+        mask = self.radiuses_volume < radius/(self.side_shape//2) * self.extent
+        self.masks_3d[radius] = mask
+        return mask
+
 
     def plot_mask(self, radius):
         if radius in self.masks_2d:

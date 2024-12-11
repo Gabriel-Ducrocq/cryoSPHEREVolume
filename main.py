@@ -99,21 +99,6 @@ def train(yaml_setting_path, debug_mode):
             else:
                 batch_predicted_images = predicted_images
 
-            #nll = torch.mean(torch.mean((predicted_images.flatten(start_dim=-2, end_dim=-1) 
-            #        - batch_structural_predicted_images.flatten(start_dim=-2, end_dim=-1))**2, dim=-1))
-
-            #nll = torch.mean(torch.mean((batch_predicted_images.flatten(start_dim=-2, end_dim=-1) 
-            #        - batch_translated_images_hartley)**2, dim=-1))
-
-            #plt.imshow(batch_predicted_images[0].detach().cpu().numpy())
-            #plt.savefig("predicted_no_ctf.png")
-            #plt.imshow(batch_structural_predicted_images[0].detach().cpu().numpy())
-            #plt.savefig("structural_ht.png")
-            #plt.imshow(batch_translated_images_hartley[0].reshape(190, 190).detach().cpu().numpy())
-            #plt.savefig("structural_ht.png")
-
-            #tracking_metrics["rmsd_structural"].append(nll.detach().cpu().numpy())
-            ####### I REMOVE THE CTF CORRUPTION !!!!!!! #######
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, 
                                     batch_structural_predicted_images_ht, predicted_images, tracking_metrics)
             print("NLL", nll)
