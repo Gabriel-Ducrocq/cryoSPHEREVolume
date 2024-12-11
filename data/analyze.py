@@ -30,6 +30,8 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
     freqs_eval = grid.freqs_volume[None, mask==1, :].to(device)
     coordinates_embedding = pos_encoding(freqs_eval)
     for k, z in enumerate(all_latent_variables):
+        print(coordinates_embedding.shape)
+        print(z.shape)
         decoder_input = torch.cat([coordinates_embedding, z[:, None, :].expand(-1, freqs_eval.shape[1], -1)], dim=-1)
         decoded_volume = decoder(decoder_input)
         predicted_volume = torch.zeros((batch_size, grid.side_shape**3), dtype=torch.float32, device=device)
