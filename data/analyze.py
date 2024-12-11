@@ -38,6 +38,9 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
         predicted_volume = predicted_volume.reshape(1, grid.side_shape, grid.side_shape, grid.side_shape)
         predicted_volume_real = utils.hartley_transform_3d(predicted_volume)
         mrc.MRCFile.write(f"{output_path}volume_{k}.mrc", predicted_volume_real[0].detach().cpu().numpy(), Apix=1.0, is_vol=True)
+        del predicted_volume
+        del predicted_volume_real
+        del decoder_input
 
 
 def analyze(yaml_setting_path, model_path, latent_path, volume_path):
