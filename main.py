@@ -97,10 +97,10 @@ def train(yaml_setting_path, debug_mode):
             if use_ctf:
                 batch_predicted_images = renderer.apply_ctf(predicted_images, ctf, indexes)
             else:
-                batch_predicted_images = predicted_images
+                batch_predicted_images = -1*predicted_images
 
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, 
-                                    batch_structural_predicted_images_ht, predicted_images, tracking_metrics)
+                                    batch_structural_predicted_images_ht, -1*predicted_images, tracking_metrics)
             print("NLL", nll)
             start_grad = time()
             nll.backward()
