@@ -1,4 +1,4 @@
-vaeimport torch
+import torch
 import wandb
 import sys
 import os
