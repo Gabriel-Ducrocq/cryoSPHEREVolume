@@ -361,7 +361,7 @@ def monitor_training(decoder, tracking_metrics, epoch, experiment_settings, opti
     #wandb.log({"Images/true_image_hartley": true_image_hartley})
     #wandb.log({"Images/predicted_hartley": predicted_image_hartley})
 
-    torch.save(decoder, experiment_settings["folder_path"] + "models_main_bis/full_model" + str(epoch))
+    torch.save(decoder, experiment_settings["folder_path"] + "models_main_ter/full_model" + str(epoch))
 
 
 
