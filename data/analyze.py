@@ -40,7 +40,7 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
         predicted_volume[:, mask==1] = decoded_volume[:, :, 0]
         predicted_volume = predicted_volume.reshape(1, grid.side_shape, grid.side_shape, grid.side_shape)
         predicted_volume_real = utils.hartley_transform_3d(predicted_volume)
-        mrc.MRCFile.write(f"{output_path}volume_{k}.mrc", np.transpose(predicted_volume_real[0].detach().cpu().numpy(), axis=(0, 2, 1)), Apix=1.0, is_vol=True)
+        mrc.MRCFile.write(f"{output_path}volume_{k}.mrc", np.transpose(predicted_volume_real[0].detach().cpu().numpy(), axes=(0, 2, 1)), Apix=1.294, is_vol=True)
         del predicted_volume
         del predicted_volume_real
         del decoder_input
