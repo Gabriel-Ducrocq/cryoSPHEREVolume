@@ -123,7 +123,6 @@ class ImageDataSet(Dataset):
         with mrcfile.mmap(self.predicted_particles_path, mode="r", permissive=True) as mrc:
             if mrc.data.ndim > 2:
                 predicted_proj = torch.from_numpy(np.array(mrc.data[idx])).float() #* self.cfg.scale_images
-                print("PREDICTED PROJ", predicted_proj.shape)
             else:
                 # the mrcs file can contain only one particle
                 predicted_proj = torch.from_numpy(np.array(mrc.data)).float() #* self.cfg.scale_images

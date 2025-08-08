@@ -67,7 +67,6 @@ def train(yaml_setting_path, debug_mode):
 
         start_tot = time()
         for batch_num, (indexes, original_images, batch_images, batch_poses, batch_poses_translation, batch_latent_variables, batch_structural_predicted_images) in enumerate(data_loader):
-            print("BATCH STRUCTURAL PREDICTED SHAPE", batch_structural_predicted_images.shape)
             batch_structural_predicted_images = batch_structural_predicted_images[:, 0, :, :]
             start_batch = time()
             original_images = original_images.to(device)
@@ -101,7 +100,7 @@ def train(yaml_setting_path, debug_mode):
 
             nll = loss.compute_loss(batch_predicted_images.flatten(start_dim=1, end_dim=2), batch_translated_images_hartley, 
                                     batch_structural_predicted_images_ht, -1*predicted_images, tracking_metrics)
-            print("NLL", nll)
+
             start_grad = time()
             nll.backward()
             optimizer.step()
