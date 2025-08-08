@@ -77,4 +77,4 @@ def compute_loss(predicted_images, images, structural_predicted_particles_ht, pr
     tracking_dict["rmsd_structural"].append(rmsd_structural.detach().cpu().numpy())
 
     loss = rmsd
-    return loss + 0.01*rmsd_structural
+    return loss + 0.001*rmsd_structural
