@@ -36,7 +36,8 @@ def decode(yaml_setting_path, all_latent_variables, model_path, output_path):
         z = z[None, :]
         decoder_input = torch.cat([coordinates_embedding, z[:, None, :].expand(-1, freqs_eval.shape[1], -1)], dim=-1)
         decoded_volume = decoder(decoder_input)
-        predicted_volume = torch.zeros((1, grid.side_shape**3), dtype=torch.float32, device=device)
+        decoded_volume = decoded_volume.detach().cpu()
+        predicted_volume = torch.zeros((1, grid.side_shape**3), dtype=torch.float32)
         predicted_volume[:, mask==1] = decoded_volume[:, :, 0]
         predicted_volume = predicted_volume.reshape(1, grid.side_shape, grid.side_shape, grid.side_shape)
         predicted_volume_real = utils.hartley_transform_3d(predicted_volume)
